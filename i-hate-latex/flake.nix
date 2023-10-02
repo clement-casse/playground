@@ -20,6 +20,8 @@
         buildInputs = with pkgs; [
           coreutils
           fira-code
+          fira-code-symbols
+          fira-code-nerdfont
           fontconfig
           texlive.combined.scheme-full
           which
@@ -29,6 +31,7 @@
         TEXMFHOME = ".cache";
         TEXMFVAR = ".cache/texmf-var";
         SOURCE_DATE_EPOCH = toString self.lastModified;
+        OSFONTDIR = "${pkgs.fira-code}/share/fonts";
       in
       with pkgs;
       {
@@ -37,18 +40,18 @@
 
         devShells.default = mkShell {
           # A Development Environment contains latex, latexmk, chktex and pygmentize
-          inherit buildInputs TEXMFHOME TEXMFVAR SOURCE_DATE_EPOCH;
+          inherit buildInputs TEXMFHOME TEXMFVAR SOURCE_DATE_EPOCH OSFONTDIR;
         };
 
         packages.default = stdenvNoCC.mkDerivation {
-          inherit buildInputs TEXMFHOME TEXMFVAR SOURCE_DATE_EPOCH;
+          inherit buildInputs TEXMFHOME TEXMFVAR SOURCE_DATE_EPOCH OSFONTDIR;
           name = "document";
           src = gitignoreSource ./.;
           phases = [ "unpackPhase" "buildPhase" "installPhase"];
 
           buildPhase = ''
             runHook preBuild
-            latexmk main.tex
+            latexmk -lualatex
             runHook postBuild
           '';
 
