@@ -1,5 +1,5 @@
 {
-  description = "Nix flake generating the PhD Manuscript";
+  description = "Nix flake generating LaTeX Documents";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -11,13 +11,13 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
+        # buildInputs Lists all the Nix Packages we will use in this Latex project
         buildInputs = with pkgs; [
-          coreutils
           fira-code
-          fira-code-symbols
-          fira-code-nerdfont
-          fontconfig
+          # Import the full Scheme of Latex and all the dependencies, it is large but we do not have 
+          # to maintain the list both in the document preamble and in the flake.
           texlive.combined.scheme-full
+          # Both `which` and `pygments` are required to run `minted`
           which
           python311Packages.pygments
         ];
@@ -43,7 +43,7 @@
           inherit buildInputs TEXMFHOME TEXMFVAR SOURCE_DATE_EPOCH OSFONTDIR;
           name = "document";
           src = self;
-          phases = [ "unpackPhase" "buildPhase" "installPhase"];
+          phases = [ "unpackPhase" "buildPhase" "installPhase" ];
 
           buildPhase = ''
             runHook preBuild
