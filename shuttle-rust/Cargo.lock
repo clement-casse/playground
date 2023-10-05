@@ -333,6 +333,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "discord-bot"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serenity",
+ "shuttle-runtime",
+ "shuttle-secrets",
+ "shuttle-serenity",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "doc-comment"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1602,19 +1615,6 @@ dependencies = [
  "tracing-subscriber",
  "ttl_cache",
  "uuid",
-]
-
-[[package]]
-name = "shuttle-discord-bot"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "serenity",
- "shuttle-runtime",
- "shuttle-secrets",
- "shuttle-serenity",
- "tokio",
- "tracing",
 ]
 
 [[package]]
