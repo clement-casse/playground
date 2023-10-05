@@ -1,5 +1,5 @@
 {
-  description = "";
+  description = "Nix Flake defining a dev environment for a Kotlin + Ktor + exposed Webapp";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
