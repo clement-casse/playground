@@ -1,5 +1,5 @@
 dist:
-  name: otelcol-custom
+  name: otelcol-custom-dev  # Set To whatever for development, will be overrided by Nix derivation
   description: Local OpenTelemetry Collector binary
   output_path: /tmp/dist
 

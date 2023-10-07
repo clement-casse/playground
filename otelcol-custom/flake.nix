@@ -9,6 +9,9 @@
   outputs = { self, nixpkgs, utils }:
     utils.lib.eachDefaultSystem (system:
       let
+        # Relative path of the config file describing the modules embedded in the custom OpenTelemetry Collector.
+        builderManifestFile = "builder-config.yaml";
+
         # Generate a user-friendly version number.
         version = builtins.substring 0 8 self.lastModifiedDate;
 
@@ -60,6 +63,7 @@
           gotools
           go-tools
           ocb
+          yq-go
         ];
 
       in
@@ -78,17 +82,40 @@
 
           src = self;
 
-          # The build Phase actually does not work because it cannot write its generated code in a read-only file system
+          inherit (go) GOOS GOARCH;
+
+          patchPhase = ''
+            runHook prePatch
+            ${yq-go}/bin/yq -i '
+              .dist.name = "${pname}" |
+              .dist.version = "${version}" |
+              .dist.otelcol_version = "${ocb.version}" |
+              .dist.output_path = "'$NIX_BUILD_TOP/go/src/$(dirname "${self}")'"' ${builderManifestFile}
+            echo "===== FILE PATCHED: ${builderManifestFile} ====="
+            cat ${builderManifestFile}
+            echo "================================================"
+            runHook postPatch
+          '';
+
+          configurePhase = ''
+            runHook preConfigure
+            mkdir -p "$NIX_BUILD_TOP/go/src/$(dirname "${self}")"
+            export GOPATH=$NIX_BUILD_TOP/go:$GOPATH
+            export GOCACHE=$TMPDIR/go-cache
+            runHook postConfigure
+          '';
+
           buildPhase = ''
             runHook preBuild
-            ${ocb}/bin/builder --config "./builder-config.yaml"
+            ${ocb}/bin/builder --config="${builderManifestFile}"
             runHook postBuild
           '';
 
           installPhase = ''
             runHook preInstall
-            mkdir -p $out
-            install -m755 -D otelcorecol $out/${pname}
+            cd "$NIX_BUILD_TOP/go/src/$(dirname "${self}")"
+            mkdir -p $out/bin
+            install -m755 -D ${pname} $out/bin/${pname}
             runHook postInstall
           '';
         };
