@@ -17,7 +17,7 @@
         # Define OpenTelemetry Collector Builder Binary build It does not exist in the nixpkgs repo.
         # In addition, Go binaries of OpenTelemetry Collector does not seem to be up to date.
         ocb = pkgs.buildGoModule rec {
-          pname = "ocb";      # The Package is named `ocb` but buildGoModule installs it as `builder`
+          pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
           version = "0.86.0";
 
           src = pkgs.fetchFromGitHub
@@ -33,10 +33,11 @@
           # TODO: Address the log "You're building a distribution with non-aligned version of the builder.
           #       Compilation may fail due to API changes."
           CGO_ENABLED = 0;
-          ldflags = [
-            "-s" "-w"
-            "-X go.opentelemetry.io/collector/cmd/builder/internal.version=${version}"
-            "-X go.opentelemetry.io/collector/cmd/builder/internal.date=${self.lastModifiedDate}"
+          ldflags = let mod = "go.opentelemetry.io/collector/cmd/builder"; in [
+            "-s"
+            "-w"
+            "-X ${mod}/internal.version=${version}"
+            "-X ${mod}/internal.date=${self.lastModifiedDate}"
           ];
 
           # The go test command fails in Nix Env with the following Error:
@@ -46,6 +47,11 @@
           # TODO: Address this issue with less aggressive test disabling or with system configuration ?
           doCheck = false;
 
+          # Check that the builder is installed by asking it to display its version
+          doInstallCheck = true;
+          installCheckPhase = ''
+            $out/bin/builder version
+          '';
         };
 
         buildInputs = with pkgs; [
@@ -66,4 +72,27 @@
           inherit buildInputs;
         };
 
+        packages.default = stdenv.mkDerivation rec {
+          inherit version buildInputs;
+          pname = "otelcol-custom";
+
+          src = self;
+
+          # The build Phase actually does not work because it cannot write its generated code in a read-only file system
+          buildPhase = ''
+            runHook preBuild
+            ${ocb}/bin/builder --config "./builder-config.yaml"
+            runHook postBuild
+          '';
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out
+            install -m755 -D otelcorecol $out/${pname}
+            runHook postInstall
+          '';
+        };
+
+        apps.default = { };
+      });
 }
