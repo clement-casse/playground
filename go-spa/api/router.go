@@ -13,6 +13,7 @@ var (
 	startTime = time.Now()
 )
 
+// NewAPIRouter creates a new http.Handler that will handle API requests
 func NewAPIRouter() http.Handler {
 	apiMux := mux.NewRouter()
 
