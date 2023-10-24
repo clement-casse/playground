@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/clement-casse/Playground/go-spa/api"
 )
 
 var (
@@ -40,15 +42,20 @@ func main() {
 		Name: "Unknown People",
 	}
 
-	// Define HTTP routes of the Application:
+	// Define HTTP router for the Application
+	mux := http.NewServeMux()
+
+	// And then map the routes:
 	// -> Everything under the URI Path `/static/` is a direct mapping of the ./static directory
-	http.Handle("/static/", http.FileServer(http.FS(staticFS)))
+	mux.Handle("/static/", http.FileServer(http.FS(staticFS)))
+	// -> Everything matching the URI Path `/api/` is managed by the Router of the `api` module
+	mux.Handle("/api/", http.StripPrefix("/api", api.NewAPIRouter()))
 	// -> matches the static page "index" and Execute the HTML template before sending the response
-	http.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
 		indexTemplate.Execute(w, indexVars)
 	})
 	// -> Default behaviour, "/" matches everything, therefore reroute the / to index and raise 404 elsewhere
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			http.Redirect(w, r, "/index", http.StatusTemporaryRedirect)
 			return
@@ -58,5 +65,5 @@ func main() {
 
 	apiAddr := fmt.Sprintf("%s:%s", *addr, *port)
 	log.Printf("Application Started and Listening on %s", apiAddr)
-	log.Fatal(http.ListenAndServe(apiAddr, nil)) // http.ListenAndServe is a blocking function, the main thread remains hanging there while serving HTTP requests
+	log.Fatal(http.ListenAndServe(apiAddr, mux)) // http.ListenAndServe is a blocking function, the main thread remains hanging there while serving HTTP requests
 }
