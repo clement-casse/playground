@@ -51,11 +51,15 @@
         # Dependencies needed at run-time
         buildInputs = with pkgs; [
           cargo-shuttle
+          sqlx-cli
           docker
           openssl
         ] ++ lib.optionals stdenv.isDarwin [
+          libiconv
           darwin.apple_sdk.frameworks.Security
           darwin.apple_sdk.frameworks.IOKit
+          darwin.apple_sdk.frameworks.CoreFoundation
+          darwin.apple_sdk.frameworks.SystemConfiguration
         ];
 
         # Common arguments for Cargo derivation have been set here to avoid repeating them later
