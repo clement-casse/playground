@@ -29,18 +29,10 @@
                 </a>
             </div>
             <p class="mt-8 text-base leading-6 text-center text-gray-400"
-                x-data="{
-                    backendStatus: {version: 'unknown', uptime: 0},
-
-                    getBackendStatus() {
-                        fetch('/api/status')
-                            .then((response) => response.json())
-                            .then((json) => this.backendStatus = json);
-                    }
-                }"
-                x-init="getBackendStatus()">
-                Backend version: <span x-text="backendStatus.version"></span>.
-                Uptime: <span x-text="backendStatus.uptime"></span>.
+                x-data="{ version: 'unknown', uptime: 0 }"
+                x-init="{version, uptime} = await (await fetch('/api/status')).json()">
+                Backend version: <span x-text="version"></span>.
+                Uptime: <span x-text="uptime"></span>.
             </p>
         </div>
     </section>
