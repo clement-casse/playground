@@ -16,13 +16,13 @@ var (
 	port = flag.String("port", "8080", "The port the program will be listening to")
 )
 
+//go:generate npm run build
 //go:embed static
 var staticFS embed.FS
 
 //go:embed templates
 var templateFS embed.FS
 
-//go:generate npm run build
 var indexTemplate *template.Template
 
 func init() {
