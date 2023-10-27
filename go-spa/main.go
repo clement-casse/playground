@@ -23,11 +23,7 @@ var staticFS embed.FS
 //go:embed templates
 var templateFS embed.FS
 
-var indexTemplate *template.Template
-
-func init() {
-	indexTemplate = template.Must(template.ParseFS(templateFS, "templates/index.html"))
-}
+var indexTemplate = template.Must(template.ParseFS(templateFS, "templates/index.html"))
 
 // indexTmplVars gather the variables that can be used in the index.html template
 type indexTmplVars struct {
