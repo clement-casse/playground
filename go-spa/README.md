@@ -33,7 +33,7 @@ This application is made with the following tools (this impacts the structure of
 
 #### Go Backend Server
 
-In this playground, I try to apply the *standard project layout* of a Go application[^1]:
+In this playground, I try to apply [the *standard project layout* of a Go application][1]:
 
 - `main.go` is the main entrypoint of the server
 - `go.{mod,sum}` files defining this directory as a Go module alongs with its dependencies.
@@ -44,8 +44,8 @@ In this playground, I try to apply the *standard project layout* of a Go applica
 
 ## References
 
-- [Xe Iaso Blog post on using Tailwind CSS in Go][1]
-- [Standard Go Project Layout][^1]
+- [Xe Iaso Blog post on using Tailwind CSS in Go][2]
+- [Standard Go Project Layout][1]
 
-[^1]: https://github.com/golang-standards/project-layout
-[1]: https://xeiaso.net/blog/using-tailwind-go/
+[1]: https://github.com/golang-standards/project-layout
+[2]: https://xeiaso.net/blog/using-tailwind-go/
