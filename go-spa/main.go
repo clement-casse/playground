@@ -5,10 +5,17 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/clement-casse/Playground/go-spa/api"
+)
+
+var (
+	Version   = "v0-dirty"
+	StartTime = time.Now()
 )
 
 var (
@@ -17,17 +24,16 @@ var (
 )
 
 //go:generate npm run build
-//go:embed static
-var staticFS embed.FS
+//go:embed dist
+var distFS embed.FS
 
-//go:embed templates
-var templateFS embed.FS
-
-var indexTemplate = template.Must(template.ParseFS(templateFS, "templates/index.html"))
+var indexTemplate = template.Must(template.ParseFS(distFS, "dist/index.html"))
 
 // indexTmplVars gather the variables that can be used in the index.html template
 type indexTmplVars struct {
-	Name string
+	Title          string
+	BackendVersion string
+	BackendUptime  time.Duration
 }
 
 func main() {
@@ -35,20 +41,31 @@ func main() {
 	flag.Parse()
 
 	indexVars := &indexTmplVars{
-		Name: "Unknown People",
+		Title:          "What a Marvelous title !",
+		BackendVersion: Version,
+	}
+
+	assetsFS, err := fs.Sub(distFS, "dist/assets")
+	if err != nil {
+		log.Fatalf("cannot create Sub File System for asssets, has `go generate ./...` been run ?")
 	}
 
 	// Define HTTP router for the Application
 	mux := http.NewServeMux()
 
 	// And then map the routes:
-	// -> Everything under the URI Path `/static/` is a direct mapping of the ./static directory
-	mux.Handle("/static/", http.FileServer(http.FS(staticFS)))
+	// -> Everything under the URI Path `/assets/` is a direct mapping of the ./static directory
+	mux.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.FS(assetsFS))))
 	// -> Everything matching the URI Path `/api/` is managed by the Router of the `api` module
 	mux.Handle("/api/", http.StripPrefix("/api", api.NewAPIRouter()))
 	// -> matches the static page "index" and Execute the HTML template before sending the response
 	mux.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
-		indexTemplate.Execute(w, indexVars)
+		indexVars.BackendUptime = time.Since(StartTime)
+		err := indexTemplate.Execute(w, indexVars)
+		if err != nil {
+			log.Print("executing index template returned an error: ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 	// -> Default behaviour, "/" matches everything, therefore reroute the / to index and raise 404 elsewhere
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

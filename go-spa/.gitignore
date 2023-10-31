@@ -1,1 +1,2 @@
-/static/stylesheets/tailwind.css
+/dist/**/*
+!/dist/.gitkeep

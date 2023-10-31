@@ -3,23 +3,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A static page</title>
-    <link rel="stylesheet" href="/static/stylesheets/tailwind.css">
+    <title>{{ .Title }}</title>
+    <link rel="stylesheet" href="/webapp/index.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-    <div class="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gray-50">
-        <div class="relative bg-white px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10">
-            <div class="mx-auto max-w-md">
-                <h1> Hello, It's me {{ .Name }}</h1>
-                <div class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Button</div>
-            </div>
-        </div>
-    </div>
+    <div id="root"></div>
+    <script type="module" src="/webapp/main.tsx"></script>
 
-    <!-- Foooter -->
+    <!-- Footer -->
     <section class="bg-white">
-        <div class="max-w-screen-xl px-4 py-12 mx-auto space-y-8 overflow-hidden sm:px-6 lg:px-8">
+        <div class="max-w-screen-xl px-4 py-12 mx-auto space-y-4 overflow-hidden sm:px-6 lg:px-8">
             <div class="flex justify-center mt-8 space-x-6">
                 <a href="#" class="text-gray-400 hover:text-gray-500">
                     <span class="sr-only">GitHub</span>
@@ -28,11 +22,9 @@
                     </svg>
                 </a>
             </div>
-            <p class="mt-8 text-base leading-6 text-center text-gray-400"
-                x-data="{ version: 'unknown', uptime: 0 }"
-                x-init="{version, uptime} = await (await fetch('/api/status')).json()">
-                Backend version: <span x-text="version"></span>.
-                Uptime: <span x-text="uptime"></span>.
+            <p class="mt-8 text-base leading-6 text-center text-gray-400">
+                Backend version: {{ .BackendVersion }}.
+                Uptime: {{ .BackendUptime }}.
             </p>
         </div>
     </section>

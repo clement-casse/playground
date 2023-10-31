@@ -15,6 +15,7 @@
       buildInputs = with pkgs; [
         # Go and Tools
         go_1_21
+        golangci-lint
         gopls
         gotools
         go-tools
