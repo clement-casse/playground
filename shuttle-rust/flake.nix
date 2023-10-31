@@ -56,6 +56,7 @@
         ] ++ lib.optionals stdenv.isDarwin [
           darwin.apple_sdk.frameworks.Security
           darwin.apple_sdk.frameworks.IOKit
+          darwin.apple_sdk.frameworks.SystemConfiguration
         ];
 
         # Common arguments for Cargo derivation have been set here to avoid repeating them later
