@@ -22,20 +22,31 @@
           inherit system overlays;
         };
 
+        otelcolVersion = "0.88.0";
+        otelcolSource = pkgs.fetchFromGitHub
+          {
+            owner = "open-telemetry";
+            repo = "opentelemetry-collector";
+            rev = "v${otelcolVersion}";
+            sha256 = "sha256-Tflva3qo9tgdTAR+Ibr8KgpXU419rg5cX9Y1P6yTl0c=";
+          };
+
+        otelcolContribVersion = otelcolVersion;
+        otelcolContribSource = pkgs.fetchFromGitHub
+          {
+            owner = "open-telemetry";
+            repo = "opentelemetry-collector-contrib";
+            rev = "v${otelcolContribVersion}";
+            sha256 = "sha256-gS3t+1IbJ8U/LNmxIcPG1S7DoSh55PhvpkaoZJqCTmo=";
+          };
+
         # Define OpenTelemetry Collector Builder Binary build It does not exist in the nixpkgs repo.
         # In addition, Go binaries of OpenTelemetry Collector does not seem to be up to date.
         ocb = pkgs.buildGoModule rec {
           pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
-          version = "0.86.0";
-
-          src = pkgs.fetchFromGitHub
-            {
-              owner = "open-telemetry";
-              repo = "opentelemetry-collector";
-              rev = "v${version}";
-              sha256 = "sha256-Ucp00OjyPtHA6so/NOzTLtPSuhXwz6A2708w2WIZb/E=";
-            } + "/cmd/builder";
-          vendorHash = "sha256-MTwD9xkrq3EudppLSoONgcPCBWlbSmaODLH9NtYgVOk=";
+          version = otelcolVersion;
+          src = otelcolSource + "/cmd/builder";
+          vendorHash = "sha256-EukCWm/T3SYFAqERlehYCbqN9OOQO0KChUa+JLVZosM=";
 
           # Tune Build Process: Set Go LDFlags and Disable CGo
           # TODO: Address the log "You're building a distribution with non-aligned version of the builder.
@@ -62,16 +73,27 @@
           '';
         };
 
+        mdatagen = pkgs.buildGoModule rec {
+          pname = "mdatagen";
+          version = otelcolContribVersion;
+          src = otelcolContribSource + "/cmd/mdatagen";
+          vendorHash = "sha256-8bm+gHYU91lrv/mIJ/4OoSJqWWJD/0Fviqo+ZjnBaLc=";
+
+          CGO_ENABLED = 0;
+          doCheck = false;
+        };
+
         nativeBuildInputs = with pkgs; [
           go_1_20
           gopls
           gotools
           go-tools
           ocb
+          mdatagen
           yq-go
         ];
 
-        buildInputs = with pkgs; [];
+        buildInputs = with pkgs; [ ];
 
       in
       with pkgs;
@@ -86,7 +108,6 @@
         packages.default = stdenv.mkDerivation rec {
           inherit version nativeBuildInputs buildInputs;
           pname = "otelcol-custom";
-
           src = self;
 
           # The Patch phase modifies the definition to run with Nix:
@@ -98,7 +119,7 @@
             ${yq-go}/bin/yq -i '
               .dist.name = "${pname}" |
               .dist.version = "${version}" |
-              .dist.otelcol_version = "${ocb.version}" |
+              .dist.otelcol_version = "${otelcolVersion}" |
               .dist.output_path = "'${GO_MOD_GEN_DIR}'"' ${builderManifestFile}
             echo "===== FILE PATCHED: ${builderManifestFile} ====="
             cat ${builderManifestFile}
