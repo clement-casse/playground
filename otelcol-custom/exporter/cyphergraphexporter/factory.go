@@ -11,6 +11,12 @@ import (
 	"github.com/clement-casse/Playground/otelcol-custom/exporter/cyphergraphexporter/internal/metadata"
 )
 
+const (
+	defaultUsername    = ""
+	defaultPassword    = ""
+	defaultDatabaseUri = "bolt://localhost:7687"
+)
+
 // NewFactory creates a factory for the CypherGraph exporter.
 func NewFactory() exporter.Factory {
 	return exporter.NewFactory(
@@ -20,7 +26,11 @@ func NewFactory() exporter.Factory {
 }
 
 func createDefaultConfig() component.Config {
-	return &Config{}
+	return &Config{
+		Username:    defaultUsername,
+		Password:    defaultPassword,
+		DatabaseUri: defaultDatabaseUri,
+	}
 }
 
 func createTracesExporter(

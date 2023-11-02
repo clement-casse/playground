@@ -69,6 +69,8 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
+github.com/neo4j/neo4j-go-driver/v5 v5.14.0 h1:5x3vD4HkXQIktlG63jSG8v9iweGjmObIPU7Y9U0ThUI=
+github.com/neo4j/neo4j-go-driver/v5 v5.14.0/go.mod h1:Vff8OwT7QpLm7L2yYr85XNWe9Rbqlbeb9asNXJTHO4k=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_golang v1.17.0 h1:rl2sfwZMtSthVU752MqfjQozy7blglC+1SOtjMAMh+Q=
@@ -93,6 +95,8 @@ go.opentelemetry.io/collector v0.88.0 h1:I0lerJK1h88vk7enriSgLV+h7dM099G9FgwkfmI
 go.opentelemetry.io/collector v0.88.0/go.mod h1:we0quZ+4txHS3Sfb0VdjFv95KYLGmto4ZAThCHiYgGA=
 go.opentelemetry.io/collector/component v0.88.0 h1:LU/1ov5D/O/gv9D2Uv88EjNKHn7DHcUCZn1qQsb/zgw=
 go.opentelemetry.io/collector/component v0.88.0/go.mod h1:4utKxz4Lilym3SPxNXJHosdaTjT1aQxI+TCmnJO54pU=
+go.opentelemetry.io/collector/config/configopaque v0.88.0 h1:4Q4UnPdAQzGqPsR7mTegJ47eT/2IvCosEnJstl9re6A=
+go.opentelemetry.io/collector/config/configopaque v0.88.0/go.mod h1:TPCHaU+QXiEV+JXbgyr6mSErTI9chwQyasDVMdJr3eY=
 go.opentelemetry.io/collector/config/configtelemetry v0.88.0 h1:54Z9uoSTpbkq3esDwHvJMChoUH8p/nfesG2xJTOXayY=
 go.opentelemetry.io/collector/config/configtelemetry v0.88.0/go.mod h1:+LAXM5WFMW/UbTlAuSs6L/W72WC+q8TBJt/6z39FPOU=
 go.opentelemetry.io/collector/confmap v0.88.0 h1:tOgY6NXMXAL2hz2+zVDQ0jvBlCUHprSf90bw5ktbdaI=

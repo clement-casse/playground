@@ -14,7 +14,7 @@
 
         # Generate a user-friendly version number.
         version = builtins.substring 0 8 self.lastModifiedDate;
-      
+
         pkgs = import nixpkgs {
           inherit system;
         };
