@@ -15,8 +15,7 @@
         # Generate a user-friendly version number.
         version = builtins.substring 0 8 self.lastModifiedDate;
 
-        overlays = [
-        ];
+        overlays = [];
 
         pkgs = import nixpkgs {
           inherit system overlays;
@@ -40,7 +39,7 @@
             sha256 = "sha256-gS3t+1IbJ8U/LNmxIcPG1S7DoSh55PhvpkaoZJqCTmo=";
           };
 
-        # Define OpenTelemetry Collector Builder Binary build It does not exist in the nixpkgs repo.
+        # Define OpenTelemetry Collector Builder Binary: It does not exist in the nixpkgs repo.
         # In addition, Go binaries of OpenTelemetry Collector does not seem to be up to date.
         ocb = pkgs.buildGoModule rec {
           pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
@@ -48,9 +47,7 @@
           src = otelcolSource + "/cmd/builder";
           vendorHash = "sha256-EukCWm/T3SYFAqERlehYCbqN9OOQO0KChUa+JLVZosM=";
 
-          # Tune Build Process: Set Go LDFlags and Disable CGo
-          # TODO: Address the log "You're building a distribution with non-aligned version of the builder.
-          #       Compilation may fail due to API changes."
+          # Tune Build Process
           CGO_ENABLED = 0;
           ldflags = let mod = "go.opentelemetry.io/collector/cmd/builder"; in [
             "-s"
@@ -59,12 +56,7 @@
             "-X ${mod}/internal.date=${self.lastModifiedDate}"
           ];
 
-          # The go test command fails in Nix Env with the following Error:
-          # > failed to update go.mod: exit status 1. Output:
-          # > go.opentelemetry.io/collector/cmd/builder imports
-          # >      go.opentelemetry.io/collector/component: github.com/knadh/koanf/maps@v0.1.1: module lookup disabled by GOPROXY=off
-          # TODO: Address this issue with less aggressive test disabling or with system configuration ?
-          doCheck = false;
+          doCheck = false; # Disable running the tests on the source code (the src is external, and tests are run on the repo anyway)
 
           # Check that the builder is installed by asking it to display its version
           doInstallCheck = true;
@@ -73,6 +65,8 @@
           '';
         };
 
+        # Define OpenTelemetry Collector Contrib mdatagen binary: it is a binary part of the 
+        # opentelemetry-collector-contrib repo to generate the `internal/metadata` package.
         mdatagen = pkgs.buildGoModule rec {
           pname = "mdatagen";
           version = otelcolContribVersion;
@@ -81,9 +75,11 @@
 
           CGO_ENABLED = 0;
           doCheck = false;
+          doInstallCheck = false; # nothing to check with this binary
         };
 
         nativeBuildInputs = with pkgs; [
+          git
           go_1_20
           gopls
           gotools
@@ -92,9 +88,6 @@
           mdatagen
           yq-go
         ];
-
-        buildInputs = with pkgs; [ ];
-
       in
       with pkgs;
       {
@@ -102,15 +95,15 @@
         formatter = nixpkgs-fmt;
 
         devShells.default = mkShell {
-          inherit nativeBuildInputs buildInputs;
+          inherit nativeBuildInputs;
         };
 
         packages.default = stdenv.mkDerivation rec {
-          inherit version nativeBuildInputs buildInputs;
+          inherit version nativeBuildInputs;
           pname = "otelcol-custom";
           src = self;
 
-          # The Patch phase modifies the definition to run with Nix:
+          # The Patch phase modifies the source code to run with Nix:
           # In that case it retrieves the package name version and OpenTelemetry Collector Builder version
           # to inject them in the builder configuration file.
           GO_MOD_GEN_DIR = "$NIX_BUILD_TOP/go/src/${pname}";
