@@ -14,11 +14,9 @@
 
         # Generate a user-friendly version number.
         version = builtins.substring 0 8 self.lastModifiedDate;
-
-        overlays = [];
-
+      
         pkgs = import nixpkgs {
-          inherit system overlays;
+          inherit system;
         };
 
         otelcolVersion = "0.88.0";
