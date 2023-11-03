@@ -99,19 +99,20 @@
         packages.default = stdenv.mkDerivation rec {
           inherit version nativeBuildInputs;
           pname = "otelcol-custom";
-          src = self;
+          src = ./.;
+
+          outputs = ["out" "gen"]; 
 
           # The Patch phase modifies the source code to run with Nix:
           # In that case it retrieves the package name version and OpenTelemetry Collector Builder version
           # to inject them in the builder configuration file.
-          GO_MOD_GEN_DIR = "$NIX_BUILD_TOP/go/src/${pname}";
           patchPhase = ''
             runHook prePatch
             ${yq-go}/bin/yq -i '
               .dist.name = "${pname}" |
               .dist.version = "${version}" |
               .dist.otelcol_version = "${otelcolVersion}" |
-              .dist.output_path = "'${GO_MOD_GEN_DIR}'"' ${builderManifestFile}
+              .dist.output_path = "'$gen'/go/src/${pname}"' ${builderManifestFile}
             echo "===== FILE PATCHED: ${builderManifestFile} ====="
             cat ${builderManifestFile}
             echo "================================================"
@@ -123,8 +124,8 @@
           # in the $GO_MOD_GEN_DIR directory that is part of the GOPATH.
           configurePhase = ''
             runHook preConfigure
-            mkdir -p "${GO_MOD_GEN_DIR}"
-            export GOPATH=$NIX_BUILD_TOP/go:$GOPATH
+            mkdir -p "$gen/go/src/${pname}"
+            export GOPATH=$gen/go:$GOPATH
             export GOCACHE=$TMPDIR/go-cache
             runHook postConfigure
           '';
@@ -139,12 +140,10 @@
             runHook postBuild
           '';
 
-          # The Binary is moved from the GOPATH to $out
+          # The Binary is moved from $gen to $out
           installPhase = ''
             runHook preInstall
-            cd "${GO_MOD_GEN_DIR}"
-            mkdir -p $out/bin
-            install -m755 -D ${pname} $out/bin/${pname}
+            install -m755 -D "$gen/go/src/${pname}/${pname}" "$out/bin/${pname}"
             runHook postInstall
           '';
         };
