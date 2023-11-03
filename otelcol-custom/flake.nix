@@ -82,6 +82,8 @@
           gopls
           gotools
           go-tools
+          golangci-lint
+          go-junit-report
           ocb
           mdatagen
           yq-go
@@ -96,12 +98,35 @@
           inherit nativeBuildInputs;
         };
 
+        checks = {
+          goTest = stdenv.mkDerivation {
+            pname = "UnitTests";
+            inherit version nativeBuildInputs;
+            src = ./.;
+
+            configurePhase = ''
+              runHook preConfigure
+              export GOPATH=$NIX_BUILD_TOP/go:$GOPATH
+              export GOCACHE=$TMPDIR/go-cache
+              runHook postConfigure
+            '';
+
+            installPhase = ''
+              runHook preInstall
+              mkdir -p $out/reports
+              cd ./exporter/cyphergraphexporter/
+              go test -json 2>&1 ./... | go-junit-report -set-exit-code -parser gojson -out $out/reports/cyphergraph.xml
+              runHook postInstall
+            '';
+          };
+        };
+
         packages.default = stdenv.mkDerivation rec {
           inherit version nativeBuildInputs;
           pname = "otelcol-custom";
           src = ./.;
 
-          outputs = ["out" "gen"]; 
+          outputs = [ "out" "gen" ];
 
           # The Patch phase modifies the source code to run with Nix:
           # In that case it retrieves the package name version and OpenTelemetry Collector Builder version
