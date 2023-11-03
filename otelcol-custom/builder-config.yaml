@@ -13,7 +13,8 @@ processors:
 
 exporters:
   - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.88.0
-  - gomod: github.com/clement-casse/Playground/otelcol-custom/exporter/cyphergraphexporter 47c4f641ce700ca5adf0def79c2c68739e99e53c
+  - gomod: github.com/clement-casse/Playground/otelcol-custom/exporter/cyphergraphexporter v0.0.0
+    path: ./exporter/cyphergraphexporter
 
-# extensions:
-#   - gomod: 
+extensions:
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/basicauthextension v0.88.0
