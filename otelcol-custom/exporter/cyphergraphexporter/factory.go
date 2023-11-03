@@ -48,7 +48,5 @@ func createTracesExporter(
 		settings,
 		config,
 		exp.tracesPusher,
-		exporterhelper.WithRetry(config.RetrySettings),
-		exporterhelper.WithTimeout(config.TimeoutSettings),
 	)
 }
