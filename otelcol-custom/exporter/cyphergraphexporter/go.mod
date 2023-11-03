@@ -3,12 +3,12 @@ module github.com/clement-casse/Playground/otelcol-custom/exporter/cyphergraphex
 go 1.20
 
 require (
+	github.com/neo4j/neo4j-go-driver/v5 v5.14.0
 	go.opentelemetry.io/collector/component v0.88.0
 	go.opentelemetry.io/collector/exporter v0.88.0
 	go.opentelemetry.io/collector/pdata v1.0.0-rcv0017
+	go.uber.org/zap v1.26.0
 )
-
-require github.com/neo4j/neo4j-go-driver/v5 v5.14.0 // indirect
 
 require (
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -35,7 +35,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.19.0 // indirect
 	go.opentelemetry.io/otel/trace v1.19.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
