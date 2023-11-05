@@ -12,13 +12,29 @@
         # Relative path of the config file describing the modules embedded in the custom OpenTelemetry Collector.
         builderManifestFile = "builder-config.yaml";
 
-        # Generate a user-friendly version number.
+        # Generate a user-friendly version number for this development environement.
         version = builtins.substring 0 8 self.lastModifiedDate;
 
-        pkgs = import nixpkgs {
-          inherit system;
-        };
+        pkgs = import nixpkgs { inherit system; };
+        nativeBuildInputs = with pkgs; [
+          # Go development ecosystem
+          go_1_20
+          gopls
+          gotools
+          go-tools
+          golangci-lint
+          go-junit-report
 
+          # Build Utilities
+          yq-go # Inject Nix Attributes in the builder definition
+
+          # OpenTelemetry Tools for generating a custom collector (Defined in custom derivations later)
+          ocb # Generate and build the code of the custom collector
+          mdatagen # Generate code for internal/metadata module in each custom modules
+        ];
+
+        # Referencing the source repository of `opentelemetry-collector` and `opentelemetry-collector-contrib`
+        # to build custom tools for collector modules development.
         otelcolVersion = "0.88.0";
         otelcolSource = pkgs.fetchFromGitHub
           {
@@ -39,7 +55,7 @@
 
         # Define OpenTelemetry Collector Builder Binary: It does not exist in the nixpkgs repo.
         # In addition, Go binaries of OpenTelemetry Collector does not seem to be up to date.
-        ocb = pkgs.buildGoModule rec {
+        ocb = pkgs.buildGoModule {
           pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
           version = otelcolVersion;
           src = otelcolSource + "/cmd/builder";
@@ -65,7 +81,7 @@
 
         # Define OpenTelemetry Collector Contrib mdatagen binary: it is a binary part of the 
         # opentelemetry-collector-contrib repo to generate the `internal/metadata` package.
-        mdatagen = pkgs.buildGoModule rec {
+        mdatagen = pkgs.buildGoModule {
           pname = "mdatagen";
           version = otelcolContribVersion;
           src = otelcolContribSource + "/cmd/mdatagen";
@@ -73,31 +89,20 @@
 
           CGO_ENABLED = 0;
           doCheck = false;
-          doInstallCheck = false; # nothing to check with this binary
+          doInstallCheck = false;
         };
-
-        nativeBuildInputs = with pkgs; [
-          git
-          go_1_20
-          gopls
-          gotools
-          go-tools
-          golangci-lint
-          go-junit-report
-          ocb
-          mdatagen
-          yq-go
-        ];
       in
       with pkgs;
       {
         # formatter: Specify the formatter that will be used by the command `nix fmt`.
         formatter = nixpkgs-fmt;
 
+        # DevShell create a Shell with all the tools loaded to the appropriate version loaded in the $PATH
         devShells.default = mkShell {
           inherit nativeBuildInputs;
         };
 
+        # checks: defines a collection of derivation performed to check (i.e. test, lint, ...) the code in the repository.
         checks = {
           goTest = stdenv.mkDerivation {
             pname = "UnitTests";
