@@ -1,3 +1,4 @@
+# IDEs and dev tools
 /.idea/
 /.vscode/
 /.fleet/
@@ -8,3 +9,9 @@
 /**/target
 /**/result
 /**/node_modules
+
+# Jekyll specific exclusions
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata

@@ -1,0 +1,7 @@
+main:
+  - title: Home
+    url: /
+  - title: All Projects
+    url: /projects/
+  - title: GitHub Repo
+    url: https://github.com/clement-casse/playground

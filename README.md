@@ -1,5 +1,44 @@
-# Personnal Playground for Testing & Discovering New Technologies
+# My Playground
 
-Well, it looks more like a Nix flakes repository at this stage ... and it is almost on purpose, this repository lists some of my experiments trying some tech tools / languages / frameworks.
-I tend to use Nix Flakes for my development environments recently and that repository listing my personnal experiments appears to be a good candidate for listing my custom flakes.
-As a disclamer, I am still learning Nix so these flakes may not be so pretty, I am doing my best to make them boring so we can focus not on the flake definition but on the content.
+**This repo is my personal playground**, so please do not expect any finished or well-scoped project but rather some very minimal projects doing one thing.
+This is a GitHub repository where I test and publish my experiments on some technologies, languages, tools, and everything I feel the need of experimenting with.
+These experiments come along with some blog-like posts, presented as a GitHup Page website hosted in this same repository.
+
+So if you want to read my articles please go to this website : [https://clement-casse.github.io/playground].
+
+Almost everything presented in this repository is the underlying code and implementations I will be discussing the posts.
+
+
+## List of the Different Projects
+
+In this git repository, each of the following directories correspond to one of the playground projects I have.
+
+| Project      | Short Description           | Status |
+|--------------|-----------------------------|--------|
+| [`i-hate-latex`](./i-hate-latex/)   | Building a latex paper with Nix flakes, so that I can avoid installing MacTex on my machine. | Will probably not receive any update |
+| [`go-spa`](./go-spa/)               | Very simple project in Go for creating a REST API Server and a TypeScript application that communicates with it. | Requires more work |
+| [`shuttle-rust`](./shuttle-rust/)   | A Rust workspace for testing [shuttle.rs](https://www.shuttle.rs/). | Will continue later |
+| [`pulumi-go`](./pulumi-go/)         | Just me discovering and soing some initial project with Pulumi in Go. | Will continue later |
+| [`kotlin-jetbrains-webapp`](./kotlin-jetbrains-webapp/) | Putting my hands into Kotlin, Ktor & Exposed for the first time. | Pondering if I should continue |
+| [`otelcol-custom`](./otelcol-custom/) | Creation of a custom OpenTelemetry Collector and creation of custom modules. | Active |
+
+These projects come along with a `flake.nix` file that describe how to build a development environment.
+The two following files are also present: 
+
+- `.envrc`: a file used by [direnv](https://direnv.net/) to automatically load the development environment described in the Nix Flake.
+- `flake.lock`: a file registering all the version used when creating the environment from the Nix Flake.
+
+Beside these files, expect each of these directories to have a structure that fits the technology they are implemented in.
+
+## Files for Jekyll Website
+
+This repository also being a Jekyll website, it also have some well-known directories where Jekyll expects to find its data.
+
+> This Jekyll site implements the [`minimal-mistakes` template](https://github.com/mmistakes/minimal-mistakes)
+
+| Directory             | Purpose       |
+|-----------------------|---------------|
+| [`_data`](./_data/)   | Directory to staore all Jekyll underlying data, like navigation menu and translations. |
+| [`_pages`](./_pages/) | Directory where Jekyll expects to find *pages* |
+| [`_posts`](./_posts/) | Directory where Jekyll expects to find the *posts* |
+| `_config.yml`         | Jekyll config file |
