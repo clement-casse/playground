@@ -5,3 +5,13 @@ main:
     url: /projects/
   - title: GitHub Repo
     url: https://github.com/clement-casse/playground
+
+all-projects:
+  - title: Development Projects
+    children:
+    - title: Custom OpenTelemetry Collector
+      url: /otelcol-custom/
+  - title: Infrastructure / Deployment
+    text: No Project Yet
+  - title: Other
+    text: No Project Yet

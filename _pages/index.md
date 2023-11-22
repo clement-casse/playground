@@ -7,4 +7,7 @@ excerpt: >
   I will provide some occasionnal writings where I explain my side projects, their purpose and what I learnt in the process of developping them.
 header:
   overlay_color: "#333"
+sidebar:
+  nav: all-projects
+author_profile: true
 ---
