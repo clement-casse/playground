@@ -11,7 +11,7 @@ all-projects:
     children:
     - title: Custom OpenTelemetry Collector
       url: /otelcol-custom/
-  - title: Infrastructure / Deployment
-    text: No Project Yet
-  - title: Other
-    text: No Project Yet
+  # - title: Infrastructure / Deployment
+  #   text: No Project Yet
+  # - title: Other
+  #   text: No Project Yet
