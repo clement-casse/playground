@@ -100,6 +100,7 @@ defaults:
       author_profile: true
       excerpt_separator: "<!--more-->"
       toc: true
+      toc_sticky: true
   - scope:
       path: "_pages"
       type: pages
