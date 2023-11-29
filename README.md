@@ -38,7 +38,13 @@ This repository also being a Jekyll website, it also have some well-known direct
 
 | Directory             | Purpose       |
 |-----------------------|---------------|
-| [`_data`](./_data/)   | Directory to staore all Jekyll underlying data, like navigation menu and translations. |
+| [`_data`](./_data/)   | Directory to store all Jekyll underlying data, like navigation menu and translations. |
 | [`_pages`](./_pages/) | Directory where Jekyll expects to find *pages* |
 | [`_posts`](./_posts/) | Directory where Jekyll expects to find the *posts* |
+| [`assets`](./assets/) | Directory to store static assets used in the Jekyll Site such as images or custom scripts. |
 | `_config.yml`         | Jekyll config file |
+| `Gemfile`             | Gemfile for Testing the site locally |
+| `Gemfile.lock`        | Lock file for tracking gem versions |
+
+Also, the site is published on GitHub Pages, which relies on Jekyll.
+All plugin versions actually deployed on GitHub Pages are references [here](https://pages.github.com/versions/).
