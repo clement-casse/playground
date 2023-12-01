@@ -2,9 +2,9 @@
 
 [![GitHubPageBadge](https://img.shields.io/badge/GitHub%20Pages-222222?style=for-the-badge&logo=GitHub%20Pages&logoColor=white)](https://clement-casse.github.io/playground)
 
-**This repo is my personal playground**, so please do not expect any finished or well-scoped project but rather some very minimal projects doing one thing.
-This is a GitHub repository where I test and publish my experiments on some technologies, languages, tools, and everything I feel the need of experimenting with.
-These experiments come along with some blog-like posts, presented as a GitHup Page website hosted in this same repository.
+**This repo is my personal playground**, so please do not expect any finished or well-scoped project but rather some very minimal projects doing one thing (at most).
+This is a repository where I test and publish my experiments on some technologies, languages, tools, and everything I feel the need of hacking around with.
+Some of these experiments may come along with some blog-like posts, presented as a GitHup Page website hosted in this same repository.
 
 Almost everything presented in this repository is the underlying code and implementations I will be discussing the posts.
 

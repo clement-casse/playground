@@ -266,7 +266,6 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages (~> 228)
-  kramdown-parser-gfm
   webrick (~> 1.8)
 
 BUNDLED WITH
