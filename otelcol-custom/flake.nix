@@ -18,6 +18,7 @@
         pkgs = import nixpkgs { inherit system; };
         nativeBuildInputs = with pkgs; [
           # Go development ecosystem
+          delve
           go_1_20
           gopls
           gotools
@@ -35,13 +36,13 @@
 
         # Referencing the source repository of `opentelemetry-collector` and `opentelemetry-collector-contrib`
         # to build custom tools for collector modules development.
-        otelcolVersion = "0.88.0";
+        otelcolVersion = "0.90.0";
         otelcolSource = pkgs.fetchFromGitHub
           {
             owner = "open-telemetry";
             repo = "opentelemetry-collector";
             rev = "v${otelcolVersion}";
-            sha256 = "sha256-Tflva3qo9tgdTAR+Ibr8KgpXU419rg5cX9Y1P6yTl0c=";
+            sha256 = "sha256-FL0lNlofXHTdn5o6g4FHNYauzJkjCKTrspSXP9slp/A=";
           };
 
         otelcolContribVersion = otelcolVersion;
@@ -50,7 +51,7 @@
             owner = "open-telemetry";
             repo = "opentelemetry-collector-contrib";
             rev = "v${otelcolContribVersion}";
-            sha256 = "sha256-gS3t+1IbJ8U/LNmxIcPG1S7DoSh55PhvpkaoZJqCTmo=";
+            sha256 = "sha256-afif2QiWoGleNoAwe5jsGDkFVj3H28uUFm01uEINBYg=";
           };
 
         # Define OpenTelemetry Collector Builder Binary: It does not exist in the nixpkgs repo.
@@ -59,7 +60,7 @@
           pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
           version = otelcolVersion;
           src = otelcolSource + "/cmd/builder";
-          vendorHash = "sha256-EukCWm/T3SYFAqERlehYCbqN9OOQO0KChUa+JLVZosM=";
+          vendorHash = "sha256-qhX5qwb/NRG8Tf2z048U6a8XysI2bJlUtUF+hfBtx4Q=";
 
           # Tune Build Process
           CGO_ENABLED = 0;
@@ -85,7 +86,7 @@
           pname = "mdatagen";
           version = otelcolContribVersion;
           src = otelcolContribSource + "/cmd/mdatagen";
-          vendorHash = "sha256-8bm+gHYU91lrv/mIJ/4OoSJqWWJD/0Fviqo+ZjnBaLc=";
+          vendorHash = "sha256-hYTdPDsIy0MWgg3rUYNVw4LpcCnx88xyYTaw85LFHu4=";
 
           CGO_ENABLED = 0;
           doCheck = false;
