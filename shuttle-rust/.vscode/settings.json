@@ -1,0 +1,5 @@
+{
+    "nixEnvSelector.nixFile": "${workspaceRoot}/flake.nix",
+    "rust-analyzer.diagnostics.useRustcErrorCode": true,
+    "rust-analyzer.cargo.sysroot": "discover"
+}

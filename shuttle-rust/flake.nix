@@ -15,11 +15,7 @@
     };
     crane = {
       url = "github:ipetkov/crane";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "utils";
-        rust-overlay.follows = "rust-overlay";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -44,6 +40,7 @@
 
         # Dependencies needed at compile-time
         nativeBuildInputs = with pkgs; [
+          rustup
           rustToolchain
           pkg-config
         ];
@@ -59,16 +56,17 @@
           darwin.apple_sdk.frameworks.SystemConfiguration
         ];
 
-        # Common arguments for Cargo derivation have been set here to avoid repeating them later
-        commonArgs = {
-          inherit version buildInputs nativeBuildInputs;
-          src = craneLib.cleanCargoSource (craneLib.path ./.);
-        };
+        src = craneLib.cleanCargoSource (craneLib.path ./.);
 
         # Build just the cargo dependencies, so we can reuse all of that work (e.g. via cachix) when running in CI
-        cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {
-          pname = "shuttle-playground-workspace";
-        });
+        cargoArtifacts = craneLib.buildDepsOnly {
+          inherit src;
+        };
+
+        # Common arguments for Cargo derivation have been set here to avoid repeating them later
+        commonArgs = {
+          inherit version src buildInputs nativeBuildInputs;
+        };
       in
       with pkgs;
       {
