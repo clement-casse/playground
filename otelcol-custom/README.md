@@ -1,5 +1,7 @@
 # Building a Custom OpenTelemetry Collector with Nix
 
+[![ghpages badge](https://img.shields.io/badge/GitHub%20Pages-222222?style=for-the-badge&logo=GitHub%20Pages&logoColor=white)](https://clement-casse.github.io/playground/otelcol-custom/)
+
 ## Why `otelcol-custom` ?
 
 Because I work on OpenTelemetry Collector and I made a similar approach at work, without Nix Flakes and with CUE.

@@ -1,0 +1,19 @@
+main:
+  - title: All Projects
+    url: /projects/
+  - title: GitHub Repo
+    url: https://github.com/clement-casse/playground
+
+all-projects:
+  - title: General Thoughts
+    children:
+      - title: On the Playground Repo
+        url: /playground-repo/
+  - title: Development Projects
+    children:
+    - title: A Custom OpenTelemetry Collector
+      url: /otelcol-custom/
+  # - title: Infrastructure / Deployment
+  #   text: No Project Yet
+  # - title: Other
+  #   text: No Project Yet

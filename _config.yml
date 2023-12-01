@@ -1,0 +1,120 @@
+# JEKYLL CONFIGURATION FOR GITHUP PAGE SITE
+
+title: Clément's Code Lab
+title-separator: "-"
+subtitle: Writings on my experiments and tests.
+description: >
+  Website where I write about my experiments and learnings that are
+  presented in this repository.
+url: https://clement-casse.github.io
+baseurl: /playground
+
+name: &whoami Clément Cassé
+locale: en
+email: clement.casse@outlook.com
+repository: clement-casse/playground
+timezone: Europe/Paris
+
+remote_theme: mmistakes/minimal-mistakes@4.24.0
+minimal_mistakes_skin: dirt
+breadcrumbs: true
+
+search: true
+search_provider: lunr
+lunr:
+  search_within_pages: true
+
+plugins:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-include-cache
+  - jekyll-feed
+  - jekyll-remote-theme
+
+include:
+  - _pages
+exclude:
+  - "**/.direnv"
+  - "**/result"
+  - "**/result/"
+  - "**/node_modules"
+  - "**/gradle"
+  - "**/target"
+  - "**/dist"
+  - "**/.idea"
+  - "**/.vscode"
+  - go-spa
+  - i-hate-latex
+  - kotlin-jetbrains-webapp
+  - otelcol-custom
+  - pulumi-go
+  - shuttle-rust
+
+author:
+  name: *whoami
+  avatar: https://avatars.githubusercontent.com/u/8605455?v=4
+  bio: >-
+    Cloud Engineer with a keen eye for observability topics especially when related to distributed systems.
+    I made my PhD on field along with some Graph Theory.
+    I like testing new technologies and new tools and that what this site is all about.
+    See it as an attempt to heal my imposter syndrome (a bit).
+  location: Toulouse, France
+  links:
+    - label: Fediverse
+      icon: fab fa-mastodon
+      url: &masto-handle https://piaille.fr/@RazAlgethi
+    - label: GitHub Profile
+      icon: fab fa-github
+      url: &github-profile https://github.com/clement-casse/
+    - label: LinkedIn Profile
+      icon: fab fa-linkedin
+      url: &linkedin-page https://www.linkedin.com/in/clementcasse/
+
+footer:
+  links:
+    - label: Fediverse
+      icon: fab fa-mastodon
+      url: *masto-handle
+    - label: GitHub Profile
+      icon: fab fa-github
+      url: *github-profile
+    - type: LinkedIn
+      icon: fab fa-linkedin
+      url: *linkedin-page
+
+social:
+  type: Person
+  name: *whoami
+  links:
+    - *masto-handle
+    - *github-profile
+    - *linkedin-page
+
+
+permalink: /:categories/:title/
+category_archive:
+  type: liquid
+  path: /projects/
+tag_archive:
+  type: liquid
+  path: /tags/
+
+
+defaults:
+  - scope:
+      path: "_posts"
+      type: posts
+    values:
+      author_profile: true
+      excerpt_separator: "<!--more-->"
+      toc: true
+      toc_label: Content
+      toc_sticky: true
+  - scope:
+      path: "_pages"
+      type: pages
+    values:
+      layout: single
+      author_profile: false
+      classes: wide
