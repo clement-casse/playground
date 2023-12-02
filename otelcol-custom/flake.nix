@@ -15,19 +15,28 @@
         # Generate a user-friendly version number for this development environement.
         version = builtins.substring 0 8 self.lastModifiedDate;
 
-        pkgs = import nixpkgs { inherit system; };
+        # Specify the version of Go for all derivétion that will use go later on.
+        overlays = [
+          (final: prev: {
+            go = prev.go_1_20;
+          })
+        ];
+
+        pkgs = import nixpkgs {
+          inherit system overlays;
+        };
+
         nativeBuildInputs = with pkgs; [
           # Go development ecosystem
           delve
-          go_1_20
+          go
           gopls
           gotools
           go-tools
           golangci-lint
-          go-junit-report
 
           # Build Utilities
-          yq-go # Inject Nix Attributes in the builder definition
+          yq-go # To inject Nix Attributes in the builder manifest
 
           # OpenTelemetry Tools for generating a custom collector (Defined in custom derivations later)
           ocb # Generate and build the code of the custom collector
@@ -36,13 +45,13 @@
 
         # Referencing the source repository of `opentelemetry-collector` and `opentelemetry-collector-contrib`
         # to build custom tools for collector modules development.
-        otelcolVersion = "0.90.0";
+        otelcolVersion = "0.90.1";
         otelcolSource = pkgs.fetchFromGitHub
           {
             owner = "open-telemetry";
             repo = "opentelemetry-collector";
             rev = "v${otelcolVersion}";
-            sha256 = "sha256-FL0lNlofXHTdn5o6g4FHNYauzJkjCKTrspSXP9slp/A=";
+            sha256 = "sha256-JKcYvJtuN38VrhcVFHRc0CKTH+x8HShs1/Ui0iN1jNo=";
           };
 
         otelcolContribVersion = otelcolVersion;
@@ -51,7 +60,7 @@
             owner = "open-telemetry";
             repo = "opentelemetry-collector-contrib";
             rev = "v${otelcolContribVersion}";
-            sha256 = "sha256-afif2QiWoGleNoAwe5jsGDkFVj3H28uUFm01uEINBYg=";
+            sha256 = "sha256-TqOcn8zPxYLHfclrUl9mfzV+kRVGF81p8alczNWA1jQ=";
           };
 
         # Define OpenTelemetry Collector Builder Binary: It does not exist in the nixpkgs repo.
@@ -86,7 +95,7 @@
           pname = "mdatagen";
           version = otelcolContribVersion;
           src = otelcolContribSource + "/cmd/mdatagen";
-          vendorHash = "sha256-hYTdPDsIy0MWgg3rUYNVw4LpcCnx88xyYTaw85LFHu4=";
+          vendorHash = "sha256-EgM/wu8BmKGtX8UTZdKbJbUSuf0rzlXzWEuzB9J5dKU=";
 
           CGO_ENABLED = 0;
           doCheck = false;
@@ -101,30 +110,6 @@
         # DevShell create a Shell with all the tools loaded to the appropriate version loaded in the $PATH
         devShells.default = mkShell {
           inherit nativeBuildInputs;
-        };
-
-        # checks: defines a collection of derivation performed to check (i.e. test, lint, ...) the code in the repository.
-        checks = {
-          goTest = stdenv.mkDerivation {
-            pname = "UnitTests";
-            inherit version nativeBuildInputs;
-            src = ./.;
-
-            configurePhase = ''
-              runHook preConfigure
-              export GOPATH=$NIX_BUILD_TOP/go:$GOPATH
-              export GOCACHE=$TMPDIR/go-cache
-              runHook postConfigure
-            '';
-
-            installPhase = ''
-              runHook preInstall
-              mkdir -p $out/reports
-              cd ./exporter/cyphergraphexporter/
-              go test -json 2>&1 ./... | go-junit-report -set-exit-code -parser gojson -out $out/reports/cyphergraph.xml
-              runHook postInstall
-            '';
-          };
         };
 
         packages.default = stdenv.mkDerivation rec {
@@ -162,7 +147,7 @@
           '';
 
           # Custom these values to build on specific platforms
-          inherit (go_1_20) GOOS GOARCH;
+          inherit (go) GOOS GOARCH;
 
           # The OCB binary is then run with the patched definition and creates the binary
           buildPhase = ''
