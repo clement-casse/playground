@@ -9,6 +9,14 @@ I have never been happy with that build process, and, therefore I made this expe
 
 The resulting flake was quite cumbersome to build and I dived into some heavy Nix Blog posts [[1], [3]] and I even had to looked at the Nix Source code [[2]] to understand how Go Modules were built (it still mysterious though).
 
+## Project Status
+
+- [x] Build a Custom Collector with Nix Flakes (#2)
+- [x] Integrate a Skeleton of exporter module to add to this specific Collector build (#4)
+- [ ] Add the exporter logic
+- [ ] Run the tests in Nix flakes `checks`
+- [ ] ...
+
 ## References
 
 - [Some blog explaining Nix to write derivations][1]
