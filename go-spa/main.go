@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/clement-casse/Playground/go-spa/api"
+	"github.com/clement-casse/playground/go-spa/api"
 )
 
 var (

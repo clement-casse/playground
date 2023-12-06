@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "golang.go",
+        "bradlc.vscode-tailwindcss",
+        "jnoortheen.nix-ide",
+        "pinage404.nix-extension-pack"
+    ]
+}
