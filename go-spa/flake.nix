@@ -14,11 +14,12 @@
 
       buildInputs = with pkgs; [
         # Go and Tools
-        go_1_21
+        go
         golangci-lint
         gopls
         gotools
         go-tools
+        delve
 
         # Node & Tools
         nodejs_20
