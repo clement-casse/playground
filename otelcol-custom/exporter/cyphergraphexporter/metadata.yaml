@@ -1,0 +1,7 @@
+type: cyphergraph
+
+status:
+  class: exporter
+  stability:
+    alpha: [traces]
+  distributions: []
