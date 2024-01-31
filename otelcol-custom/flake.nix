@@ -45,22 +45,13 @@
 
         # Referencing the source repository of `opentelemetry-collector` and `opentelemetry-collector-contrib`
         # to build custom tools for collector modules development.
-        otelcolVersion = "0.90.1";
+        otelcolVersion = "0.93.0";
         otelcolSource = pkgs.fetchFromGitHub
           {
             owner = "open-telemetry";
             repo = "opentelemetry-collector";
             rev = "v${otelcolVersion}";
-            sha256 = "sha256-JKcYvJtuN38VrhcVFHRc0CKTH+x8HShs1/Ui0iN1jNo=";
-          };
-
-        otelcolContribVersion = otelcolVersion;
-        otelcolContribSource = pkgs.fetchFromGitHub
-          {
-            owner = "open-telemetry";
-            repo = "opentelemetry-collector-contrib";
-            rev = "v${otelcolContribVersion}";
-            sha256 = "sha256-TqOcn8zPxYLHfclrUl9mfzV+kRVGF81p8alczNWA1jQ=";
+            sha256 = "sha256-caDBVB1ChAAU5fGip8HbC4hXcTomsRoLIobtMSvX/HY=";
           };
 
         # Define OpenTelemetry Collector Builder Binary: It does not exist in the nixpkgs repo.
@@ -69,7 +60,7 @@
           pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
           version = otelcolVersion;
           src = otelcolSource + "/cmd/builder";
-          vendorHash = "sha256-qhX5qwb/NRG8Tf2z048U6a8XysI2bJlUtUF+hfBtx4Q=";
+          vendorHash = "sha256-nASmx+z2V2QgHCo1Wi+4Lf5lBev8Nk9bHwfkLib/5UY=";
 
           # Tune Build Process
           CGO_ENABLED = 0;
@@ -89,13 +80,15 @@
           '';
         };
 
-        # Define OpenTelemetry Collector Contrib mdatagen binary: it is a binary part of the 
-        # opentelemetry-collector-contrib repo to generate the `internal/metadata` package.
+        # Define OpenTelemetry Collector mdatagen binary: it is a binary part of the `opentelemetry-collector`
+        # repo to generate the `internal/metadata` package in each custom package.
         mdatagen = pkgs.buildGoModule {
           pname = "mdatagen";
-          version = otelcolContribVersion;
-          src = otelcolContribSource + "/cmd/mdatagen";
-          vendorHash = "sha256-EgM/wu8BmKGtX8UTZdKbJbUSuf0rzlXzWEuzB9J5dKU=";
+          version = otelcolVersion;
+          src = otelcolSource;
+          sourceRoot = "source/cmd/mdatagen";
+          vendorHash = "sha256-CLC+byCW38gAQJK8iEilWg9sIbMlxn5Z6OgU3+hLV28=";
+          allowGoReference = false;
 
           CGO_ENABLED = 0;
           doCheck = false;
