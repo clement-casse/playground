@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=$GOPKG/pkg \
     CGO_ENABLED=0 GOOS=linux \
     go build -v \
       -o /usr/local/bin/my-service \
-      -ldflags="-X ${mod}/cmd/internal.version=${version} -X ${mod}/cmd/internal.date=${builddate}" \
+      -ldflags="-X ${mod}/cmd/my-service/internal.version=${version} -X ${mod}/cmd/my-service/internal.date=${builddate}" \
       ./cmd/my-service
 
 #-----
