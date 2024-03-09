@@ -11,6 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
+
+	"github.com/clement-casse/playground/webservice-go/tools/web"
 )
 
 var (
@@ -104,11 +106,12 @@ func runMain(flags *flag.FlagSet) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	server := &http.Server{Addr: listenAddr} //nolint:gosec // Ignoring G114: Use of net/http serve function that has no support for setting timeouts.
-
+	server := web.NewServer(listenAddr, http.DefaultServeMux,
+		web.WithLogger(logger),
+	)
 	srvErr := make(chan error, 1)
 	go func() {
-		srvErr <- server.ListenAndServe()
+		srvErr <- server.StartServer(ctx)
 	}()
 
 	select {
