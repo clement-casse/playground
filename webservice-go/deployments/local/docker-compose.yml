@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  my-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080/tcp
+    environment:
+      # The following are resolved from the environment.
+      # If they are already set in your shell, no need to fill these fields.
+      MARVEL_PUBLIC_KEY:
+      MARVEL_PRIVATE_KEY:

@@ -16,11 +16,12 @@ In this git repository, each of the following directories correspond to one of t
 | Project      | Short Description           | Status |
 |--------------|-----------------------------|--------|
 | [`i-hate-latex`](./i-hate-latex/)   | Building a latex paper with Nix flakes, so that I can avoid installing MacTex on my machine. | Will probably not receive any update |
-| [`go-spa`](./go-spa/)               | Very simple project in Go for creating a REST API Server and a TypeScript application that communicates with it. | Requires more work |
+| ~~[`go-spa`](./go-spa/)~~          | ~~Very simple project in Go for creating a REST API Server and a TypeScript application that communicates with it.~~ | **Abandonned** _refer to [`webservice-go`](./webservice-go/) for a more avtive version_ |
 | [`shuttle-rust`](./shuttle-rust/)   | A Rust workspace for testing [shuttle.rs](https://www.shuttle.rs/). | Will continue later |
 | [`pulumi-go`](./pulumi-go/)         | Just me discovering and soing some initial project with Pulumi in Go. | Will continue later |
 | [`kotlin-jetbrains-webapp`](./kotlin-jetbrains-webapp/) | Putting my hands into Kotlin, Ktor & Exposed for the first time. | Pondering if I should continue |
 | [`otelcol-custom`](./otelcol-custom/) | Creation of a custom OpenTelemetry Collector and creation of custom modules. | Active |
+| [`webservice-go`](./webservice-go/) | A very conventional Web server in Go with some reusable components, I think ... | Active |
 
 These projects come along with a `flake.nix` file that describe how to build a development environment.
 The two following files are also present: 
