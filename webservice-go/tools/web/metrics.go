@@ -13,7 +13,7 @@ import (
 // MetricsMiddleware
 type MetricsMiddleware struct {
 	handler http.Handler
-	pattern *string
+	pattern string
 
 	requestDurationHist  api.Int64Histogram
 	requestBytesCounter  api.Int64Counter
@@ -21,7 +21,7 @@ type MetricsMiddleware struct {
 }
 
 // NewMetricsMiddleware creates a new metric monitoring middleware
-func NewMetricsMiddleware(otelMeter api.Meter, pattern *string) *MetricsMiddleware {
+func NewMetricsMiddleware(otelMeter api.Meter, pattern string) *MetricsMiddleware {
 	mm := &MetricsMiddleware{pattern: pattern}
 	var err error
 	mm.requestDurationHist, err = otelMeter.Int64Histogram(
@@ -74,10 +74,10 @@ func (mm *MetricsMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mm.handler.ServeHTTP(rww, r)
 
 	var httpRouteKey string
-	if mm.pattern == nil {
+	if mm.pattern == "" {
 		httpRouteKey = r.URL.Path
 	} else {
-		httpRouteKey = *mm.pattern
+		httpRouteKey = mm.pattern
 	}
 	o := metric.WithAttributes(
 		semconv.HTTPRequestMethodKey.String(r.Method),

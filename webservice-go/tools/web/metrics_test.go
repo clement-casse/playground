@@ -24,7 +24,7 @@ func TestMetricsWithAttributes(t *testing.T) {
 	testProvider := metric.NewMeterProvider(metric.WithReader(mReader))
 	testMeter := testProvider.Meter("test-meter")
 
-	mm := NewMetricsMiddleware(testMeter, nil)
+	mm := NewMetricsMiddleware(testMeter, "")
 	testServer := httptest.NewServer(mm.Chain(testingHandler))
 	defer testServer.Close()
 
@@ -90,7 +90,7 @@ func TestMetricsPatternOverride(t *testing.T) {
 	testMeter := testProvider.Meter("test-meter")
 
 	pattern := "/character/{name}"
-	mm := NewMetricsMiddleware(testMeter, &pattern)
+	mm := NewMetricsMiddleware(testMeter, pattern)
 	testServer := httptest.NewServer(mm.Chain(testingHandler))
 	defer testServer.Close()
 
