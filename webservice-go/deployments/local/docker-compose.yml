@@ -7,8 +7,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080/tcp
-    environment:
+    #environment:
       # The following are resolved from the environment.
       # If they are already set in your shell, no need to fill these fields.
-      MARVEL_PUBLIC_KEY:
-      MARVEL_PRIVATE_KEY:
+    command: [
+      --listen, ":8080",
+      --loglevel, "INFO",
+    ]
