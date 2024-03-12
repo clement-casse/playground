@@ -4,11 +4,9 @@
   "description": "A Sample Application with Go Tailwind and a REST API",
   "author": "Clément Cassé",
   "license": "ISC",
-  "main": "index.js",
   "scripts": {
     "dev": "node ./node_modules/vite/bin/vite.js",
-    "build": "tsc && node ./node_modules/vite/bin/vite.js build",
-    "watch": "tailwindcss build -o ../static/stylesheets/tailwind.css --watch"
+    "build": "tsc && node ./node_modules/vite/bin/vite.js build"
   },
   "dependencies": {
     "react": "^18.2.0",
