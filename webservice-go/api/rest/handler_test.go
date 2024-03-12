@@ -76,7 +76,7 @@ func TestHandleErrors(t *testing.T) {
 			name:         "an unwrapped error should be reported as 500 internal server error with no body",
 			innerHandler: wildErrorHandler,
 			expectStatus: http.StatusInternalServerError,
-			expectBody:   "\n",
+			expectBody:   "{}\n",
 			expectLog:    errTesting.Error(),
 		},
 	} {
