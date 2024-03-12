@@ -26,6 +26,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: "webservice-go/web/app/package-lock.json"
+      - name: NPM clean install
+        working-directory: webservice-go/web/app/
+        run: npm ci
       - name: Go Generate
         working-directory: webservice-go
         run: go generate -v ./...
