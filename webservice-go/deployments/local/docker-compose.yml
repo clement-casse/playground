@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  my-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080/tcp
+    #environment:
+      # The following are resolved from the environment.
+      # If they are already set in your shell, no need to fill these fields.
+    command: [
+      --listen, ":8080",
+      --loglevel, "INFO",
+    ]

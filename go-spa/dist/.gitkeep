@@ -1,3 +1,0 @@
-# `dist` directory
-
-This directory is populated by running `npm run build` or `go generate ./...`
