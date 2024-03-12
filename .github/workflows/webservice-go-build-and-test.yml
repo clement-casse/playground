@@ -1,4 +1,4 @@
-name: "Test and Build the Go Application from the project webservice-go"
+name: "[webservice-go] Test and Build project"
 on:
   pull_request:
     paths:
@@ -8,8 +8,12 @@ env:
   GO_VERSION: "~1.22"
   NODE_VERSION: "20"
 
+defaults:
+  run:
+    working-directory: webservice-go
+
 jobs:
-  Validate:
+  Generate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -28,13 +32,51 @@ jobs:
           cache-dependency-path: "webservice-go/web/app/package-lock.json"
       - name: NPM clean install
         working-directory: webservice-go/web/app/
-        run: npm ci
+        run: npm clean-install
       - name: Go Generate
-        working-directory: webservice-go
         run: go generate -v ./...
+      - name: Upload generated code as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-generate
+          path: |
+            webservice-go/web/app/dist/
+          retention-days: 1
+          if-no-files-found: error
+
+  Validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+          cache-dependency-path: "webservice-go/go.sum"
+      - name: Download generated files
+        uses: actions/download-artifact@v4
       - name: Go Vet
-        working-directory: webservice-go
         run: go vet -json ./...
       - name: Go fmt
-        working-directory: webservice-go
         run: test -z $(go fmt ./...)
+
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+          cache-dependency-path: "webservice-go/go.sum"
+      - name: Download generated files
+        uses: actions/download-artifact@v4
+      - name: Go Test Coverage
+        run: |
+          go test -failfast -coverprofile=coverage.out -covermode count ./...
+          sed -i '/_gen.go:/d' coverage.out
+          go tool cover -html=coverage.out -o coverage.html
