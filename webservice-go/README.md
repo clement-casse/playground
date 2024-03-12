@@ -1,5 +1,7 @@
 # A Webservice in Go
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/clement-casse/playground/webservice-go?style=flat-square)](https://goreportcard.com/report/github.com/clement-casse/playground/webservice-go)
+
 ## Why a WebService in Go into the playground ?
 
 Well, I made some code in my work experiences where I used Go Webservices that I instrumented with OpenTelemetry.
