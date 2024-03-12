@@ -1,4 +1,4 @@
-name: "[webservice-go] Test and Build project"
+name: "[webservice-go] Test and Build"
 on:
   pull_request:
     paths:
@@ -98,9 +98,12 @@ jobs:
           sed -i '/_gen.go:/d' coverage.out
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.1.0
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          file: ./coverage.out
+          name: codecov-webservice-go
+          file: webservice-go/coverage.out
+          disable_search: true
           working-directory: webservice-go
           flags: unittests
-          token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: true
+
