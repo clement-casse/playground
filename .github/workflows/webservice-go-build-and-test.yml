@@ -1,0 +1,37 @@
+name: "Test and Build the Go Application from the project webservice-go"
+on:
+  pull_request:
+    paths:
+      - "webservice-go/**.go"
+
+env:
+  GO_VERSION: "~1.22"
+  NODE_VERSION: "20"
+
+jobs:
+  Validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+          cache-dependency-path: "webservice-go/go.sum"
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: "webservice-go/web/app/package-lock.json"
+      - name: Go Generate
+        working-directory: webservice-go
+        run: go generate -v ./...
+      - name: Go Vet
+        working-directory: webservice-go
+        run: go vet -json ./...
+      - name: Go fmt
+        working-directory: webservice-go
+        run: test -z $(go fmt ./...)
