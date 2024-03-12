@@ -94,20 +94,19 @@ func (s *APIHandler) registerRoute(pattern string, handlerFunc handlerFuncWithEr
 
 func (s *APIHandler) handleErrors(hwe handlerFuncWithError) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
 		err := hwe(w, r)
 		if err != nil {
 			var apiErr apiError
 			if errors.As(err, &apiErr) {
-				s.logger.ErrorContext(ctx, apiErr.Error())
+				s.logger.ErrorContext(r.Context(), apiErr.Error())
 				resp, err2 := json.Marshal(apiErr)
 				if err2 != nil {
-					s.logger.ErrorContext(ctx, "cannot marshal APIError: "+err2.Error(), "error", err.Error())
+					s.logger.ErrorContext(r.Context(), "cannot marshal APIError: "+err2.Error(), "error", err.Error())
 				}
 				http.Error(w, string(resp), apiErr.status)
 			} else {
-				s.logger.ErrorContext(ctx, err.Error())
-				http.Error(w, "{}", http.StatusInternalServerError)
+				s.logger.ErrorContext(r.Context(), err.Error())
+				http.Error(w, `{}`, http.StatusInternalServerError)
 			}
 		}
 	}
