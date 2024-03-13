@@ -103,6 +103,6 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           working-directory: webservice-go
-          codecov_yml_path: .
+          codecov_yml_path: ./codecov.yaml
           flags: webservice-go
 
