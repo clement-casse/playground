@@ -73,6 +73,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: latest
+          skip-pkg-cache: true
           working-directory: webservice-go
 
   Test-Go:
@@ -102,7 +103,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: codecov-webservice-go
-          file: webservice-go/coverage.out
+          file: coverage.out
           disable_search: true
           working-directory: webservice-go
           flags: unittests
