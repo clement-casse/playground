@@ -102,9 +102,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          name: codecov-webservice-go
-          file: coverage.out
-          disable_search: true
           working-directory: webservice-go
-          flags: unittests
+          codecov_yml_path: .
+          flags: webservice-go
 

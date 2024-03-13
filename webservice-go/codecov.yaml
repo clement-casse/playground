@@ -1,0 +1,20 @@
+coverage:
+  status:
+    project:
+      default:
+        threshold: 0.10%
+      webservice-go:
+        target: auto
+        flags: [ webservice-go ]
+      # webservice-front:
+      #   target: auto
+      #   flags: [ webservice-front ]
+
+flags:
+  webservice-go:
+    paths: [ ./coverage.out ]
+    carryforward: true
+  # webservice-front:
+  #   paths: [ ./web/app/coverage.json ]
+  #   carryforward: true
+
