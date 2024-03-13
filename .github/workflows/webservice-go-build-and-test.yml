@@ -99,10 +99,8 @@ jobs:
           sed -i '/_gen.go:/d' coverage.out
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.1.0
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          working-directory: webservice-go
-          codecov_yml_path: ./codecov.yaml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          codecov_yml_path: ./webservice-go/codecov.yaml
           flags: webservice-go
 
