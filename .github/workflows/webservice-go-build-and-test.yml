@@ -95,12 +95,12 @@ jobs:
           path: webservice-go/web/app/dist/
       - name: Go Test Coverage
         run: |
-          go test -failfast -coverprofile=coverage.out -covermode count ./...
+          go test -failfast -race -covermode=atomic -coverprofile=coverage.out ./...
           sed -i '/_gen.go:/d' coverage.out
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          codecov_yml_path: ./webservice-go/codecov.yaml
+          codecov_yml_path: webservice-go/codecov.yaml
           flags: webservice-go
 
