@@ -1,5 +1,7 @@
 # A Webservice in Go
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/clement-casse/playground/webservice-go?style=flat-square)](https://goreportcard.com/report/github.com/clement-casse/playground/webservice-go)
+
 ## Why a WebService in Go into the playground ?
 
 Well, I made some code in my work experiences where I used Go Webservices that I instrumented with OpenTelemetry.
@@ -9,8 +11,9 @@ In this project, I make an attempt to restart the design from scratch of an Open
 
 This projects makes an attempt to match the [Standard Go Project Layout][1].
 It also replicates structures that I found rather elegant (_for Go code ..._) in other Open-Source Go projects like the:
-    - [Functional Options frome Dave Cheney][2] extensively used in [https://github.com/open-telemetry/opentelemetry-go] where I first discovered it.
-    - In [Handling errors in Go we apps][3], author propose an interesting approach to decouple the error handling from the logic of the http handlers without any additional library.
+
+- [Functional Options frome Dave Cheney][2] extensively used in [open-telemetry/opentelemetry-go](https://github.com/open-telemetry/opentelemetry-go) where I first discovered it.
+- In [Handling errors in Go we apps][3], the author proposes a clean approach to decouple the error handling from the logic of the http handlers without any additional library.
 
 
 ## References

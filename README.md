@@ -22,7 +22,7 @@ In this git repository, each of the following directories correspond to one of t
 | [`otelcol-custom`](./otelcol-custom/) | Creation of a custom OpenTelemetry Collector and creation of custom modules. | Active |
 | [`webservice-go`](./webservice-go/) | A very conventional Web server in Go with some reusable components, I think ... | Active |
 
-These projects come along with a `flake.nix` file that describe how to build a development environment.
+These projects come along with a `flake.nix` file that describes the development environment for this project.
 The two following files are also present: 
 
 - `.envrc`: a file used by [direnv](https://direnv.net/) to automatically load the development environment described in the Nix Flake.
