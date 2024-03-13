@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - "webservice-go/**"
+  push:
+    branches:
+      - 'main'
+    paths:
+      - "webservice-go/**"
 
 permissions:
   contents: read
