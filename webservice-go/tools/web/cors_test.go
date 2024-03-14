@@ -47,10 +47,10 @@ func TestCORSMiddleware(t *testing.T) {
 			testServer := httptest.NewServer(cm.Chain(testingHandler))
 			defer testServer.Close()
 			req, err := http.NewRequest(http.MethodGet, testServer.URL, nil)
+			assert.Nil(t, err)
 			for rhKey, rhValue := range tt.reqHeaders {
 				req.Header.Set(rhKey, rhValue)
 			}
-			assert.Nil(t, err)
 			res, err := http.DefaultClient.Do(req)
 			assert.Nil(t, err)
 			for rhKey, rhValue := range tt.resHeaders {
