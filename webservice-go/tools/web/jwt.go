@@ -2,7 +2,6 @@ package web
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -42,7 +41,6 @@ func (jm *JWTAuthMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqToken := strings.Split(bearerToken, " ")[1]
-	fmt.Println(reqToken)
 	claims := &jwt.RegisteredClaims{}
 	token, err := jm.parser.ParseWithClaims(reqToken, claims, func(_ *jwt.Token) (any, error) {
 		return jm.secretKey, nil
@@ -52,9 +50,9 @@ func (jm *JWTAuthMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			errors.Is(err, jwt.ErrTokenExpired) ||
 			errors.Is(err, jwt.ErrTokenNotValidYet) {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
-		} else {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	if !token.Valid {
