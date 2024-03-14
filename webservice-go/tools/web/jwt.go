@@ -11,6 +11,7 @@ import (
 
 var authHeaderRegex = regexp.MustCompile(`[^\s]+\s[^\s]`)
 
+// JWTAuthMiddleware verifies that the requests addressed to the inner handler are signed with JWT
 type JWTAuthMiddleware struct {
 	handler http.Handler
 
@@ -18,6 +19,7 @@ type JWTAuthMiddleware struct {
 	secretKey []byte
 }
 
+// NewJWTAuthMiddleware creates a JWTAuthMiddleware with the giver secret key used to check requests signature
 func NewJWTAuthMiddleware(secretKey []byte) *JWTAuthMiddleware {
 	return &JWTAuthMiddleware{
 		handler:   nil,
