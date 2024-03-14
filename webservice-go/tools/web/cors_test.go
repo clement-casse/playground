@@ -39,7 +39,7 @@ func TestCORSMiddleware(t *testing.T) {
 			allowedOrigins: []string{"http://example.com"},
 			reqHeaders:     map[string]string{"Origin": "http://not-allowed.com"},
 			resHeaders:     map[string]string{"Vary": "Origin"},
-			expectStatus:   http.StatusNoContent,
+			expectStatus:   http.StatusForbidden,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
