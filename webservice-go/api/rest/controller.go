@@ -33,8 +33,8 @@ func (fn apiControllerOptFunc) applyOpt(s *APIController) *APIController {
 	return fn(s)
 }
 
-// NewAPIHandler creates an API Handler for REST API
-func NewAPIHandler(opts ...APIControllerOpt) *APIController {
+// NewAPIController creates an API Handler for REST API
+func NewAPIController(opts ...APIControllerOpt) *APIController {
 	apiController := &APIController{
 		mux:        http.NewServeMux(),
 		otelMeter:  nil,
@@ -81,13 +81,16 @@ func setJSONHeader(h http.Handler) http.Handler {
 
 type handlerFuncWithError func(http.ResponseWriter, *http.Request) error
 
-func (c *APIController) registerRoute(pattern string, handlerFunc handlerFuncWithError) {
+func (c *APIController) registerRoute(pattern string, handlerFunc handlerFuncWithError, middlewares ...web.MiddlewareChainer) {
 	handler := setJSONHeader(c.handleErrors(handlerFunc))
 	if c.otelMeter != nil {
 		handler = web.NewMetricsMiddleware(c.otelMeter, pattern).Chain(handler)
 	}
 	if c.otelTracer != nil {
 		handler = otelhttp.NewHandler(handler, pattern)
+	}
+	for _, mw := range middlewares {
+		handler = mw.Chain(handler)
 	}
 	c.mux.Handle(pattern, handler)
 }

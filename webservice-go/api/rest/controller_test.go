@@ -10,29 +10,33 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+
+	"github.com/clement-casse/playground/webservice-go/tools/web"
 )
 
 func TestWithLogger(t *testing.T) {
 	l := &slog.Logger{}
-	s := NewAPIHandler(WithLogger(l))
+	s := NewAPIController(WithLogger(l))
 	assert.Same(t, l, s.logger)
 }
 
 func TestWithMeter(t *testing.T) {
 	mp := sdkmetric.NewMeterProvider()
 	meter := mp.Meter("some meter")
-	s := NewAPIHandler(WithMeter(meter))
+	s := NewAPIController(WithMeter(meter))
 	assert.Same(t, meter, s.otelMeter)
 }
 
 func TestWithTracer(t *testing.T) {
 	tp := sdktrace.NewTracerProvider()
 	tracer := tp.Tracer("some tracer")
-	s := NewAPIHandler(WithTracer(tracer))
+	s := NewAPIController(WithTracer(tracer))
 	assert.Same(t, tracer, s.otelTracer)
 }
 
@@ -82,12 +86,12 @@ func TestHandleErrors(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			var recorder bytes.Buffer
-			apiHandler := &APIController{logger: slog.New(slog.NewTextHandler(&recorder, &slog.HandlerOptions{Level: slog.LevelError}))}
+			ctrl := &APIController{logger: slog.New(slog.NewTextHandler(&recorder, &slog.HandlerOptions{Level: slog.LevelError}))}
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "http:///", nil)
 
-			apiHandler.handleErrors(tt.innerHandler)(w, req)
+			ctrl.handleErrors(tt.innerHandler)(w, req)
 
 			resp := w.Result()
 			assert.Equal(t, tt.expectStatus, resp.StatusCode, "unexpected status")
@@ -110,28 +114,27 @@ func TestRegisterRoute(t *testing.T) {
 	testLogger := slog.New(slog.NewTextHandler(&recorder, &slog.HandlerOptions{Level: slog.LevelError}))
 
 	for _, tt := range []struct {
-		name       string
-		apiHandler *APIController
+		name          string
+		apiController *APIController
 
 		expectedErrorLogLines int
 	}{
 		{
-			name:       "a normal APIHandler",
-			apiHandler: NewAPIHandler(),
+			name:          "a normal APIHandler",
+			apiController: NewAPIController(),
 		}, {
 			name:                  "an APIHandler with a logger",
-			apiHandler:            NewAPIHandler(WithLogger(testLogger)),
+			apiController:         NewAPIController(WithLogger(testLogger)),
 			expectedErrorLogLines: 2,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			simpleAPIHandler := tt.apiHandler
+			ctrl := tt.apiController
+			ctrl.registerRoute("GET /", workingHandler)
+			ctrl.registerRoute("GET /notfound", apiErrorHandlerNotFound)
+			ctrl.registerRoute("GET /wilderror", wildErrorHandler)
 
-			simpleAPIHandler.registerRoute("GET /", workingHandler)
-			simpleAPIHandler.registerRoute("GET /notfound", apiErrorHandlerNotFound)
-			simpleAPIHandler.registerRoute("GET /wilderror", wildErrorHandler)
-
-			testServer := httptest.NewServer(simpleAPIHandler.mux)
+			testServer := httptest.NewServer(ctrl.mux)
 			defer testServer.Close()
 
 			resOK, err := http.Get(testServer.URL + "/")
@@ -163,4 +166,34 @@ func TestRegisterRoute(t *testing.T) {
 			recorder.Reset()
 		})
 	}
+}
+
+func TestRegisterRouteWithMiddlewares(t *testing.T) {
+	secretKey := []byte("privatekeyformytest")
+
+	ctrl := NewAPIController()
+	ctrl.registerRoute("GET /", workingHandler, web.NewJWTAuthMiddleware(secretKey))
+
+	testServer := httptest.NewServer(ctrl.mux)
+	defer testServer.Close()
+
+	resUnauthorized, err := http.Get(testServer.URL + "/")
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusUnauthorized, resUnauthorized.StatusCode)
+
+	// Testing a flow with JWT Signature
+	validClaims := &jwt.RegisteredClaims{
+		Issuer:    "test",
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(10 * time.Minute)),
+	}
+	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, validClaims)
+	signedToken, err := validToken.SignedString(secretKey)
+	assert.Nil(t, err)
+
+	req, err := http.NewRequest(http.MethodGet, testServer.URL, nil)
+	assert.Nil(t, err)
+	req.Header.Set("Authorization", "Bearer "+signedToken)
+	res, err := http.DefaultClient.Do(req)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
