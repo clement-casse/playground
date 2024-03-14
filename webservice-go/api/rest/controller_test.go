@@ -82,7 +82,7 @@ func TestHandleErrors(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			var recorder bytes.Buffer
-			apiHandler := &APIHandler{logger: slog.New(slog.NewTextHandler(&recorder, &slog.HandlerOptions{Level: slog.LevelError}))}
+			apiHandler := &APIController{logger: slog.New(slog.NewTextHandler(&recorder, &slog.HandlerOptions{Level: slog.LevelError}))}
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "http:///", nil)
@@ -111,7 +111,7 @@ func TestRegisterRoute(t *testing.T) {
 
 	for _, tt := range []struct {
 		name       string
-		apiHandler *APIHandler
+		apiHandler *APIController
 
 		expectedErrorLogLines int
 	}{

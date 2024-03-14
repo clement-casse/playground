@@ -13,8 +13,8 @@ import (
 	"github.com/clement-casse/playground/webservice-go/tools/web"
 )
 
-// APIHandler is a server that registers endpoints for a REST API
-type APIHandler struct {
+// APIController is a server that registers endpoints for a REST API
+type APIController struct {
 	mux *http.ServeMux
 
 	otelMeter  metricapi.Meter
@@ -22,20 +22,20 @@ type APIHandler struct {
 	logger     *slog.Logger
 }
 
-// APIHandlerOpt in an interface for applying APIHandler options.
-type APIHandlerOpt interface {
-	applyOpt(*APIHandler) *APIHandler
+// APIControllerOpt in an interface for applying APIHandler options.
+type APIControllerOpt interface {
+	applyOpt(*APIController) *APIController
 }
 
-type apiHandlerOptFunc func(*APIHandler) *APIHandler
+type apiControllerOptFunc func(*APIController) *APIController
 
-func (fn apiHandlerOptFunc) applyOpt(s *APIHandler) *APIHandler {
+func (fn apiControllerOptFunc) applyOpt(s *APIController) *APIController {
 	return fn(s)
 }
 
 // NewAPIHandler creates an API Handler for REST API
-func NewAPIHandler(opts ...APIHandlerOpt) *APIHandler {
-	apiHandler := &APIHandler{
+func NewAPIHandler(opts ...APIControllerOpt) *APIController {
+	apiController := &APIController{
 		mux:        http.NewServeMux(),
 		otelMeter:  nil,
 		otelTracer: nil,
@@ -43,30 +43,30 @@ func NewAPIHandler(opts ...APIHandlerOpt) *APIHandler {
 	}
 
 	for _, opt := range opts {
-		apiHandler = opt.applyOpt(apiHandler)
+		apiController = opt.applyOpt(apiController)
 	}
-	return apiHandler
+	return apiController
 }
 
 // WithLogger applies a custom logger for the APIHandler
-func WithLogger(l *slog.Logger) APIHandlerOpt {
-	return apiHandlerOptFunc(func(s *APIHandler) *APIHandler {
+func WithLogger(l *slog.Logger) APIControllerOpt {
+	return apiControllerOptFunc(func(s *APIController) *APIController {
 		s.logger = l
 		return s
 	})
 }
 
 // WithMeter applies a custom OpenTelemetry Meter for the APIHandler (if not set no metrics are collected)
-func WithMeter(m metricapi.Meter) APIHandlerOpt {
-	return apiHandlerOptFunc(func(s *APIHandler) *APIHandler {
+func WithMeter(m metricapi.Meter) APIControllerOpt {
+	return apiControllerOptFunc(func(s *APIController) *APIController {
 		s.otelMeter = m
 		return s
 	})
 }
 
 // WithTracer applies a custom OpenTelemetry Tracer for the APIHandler (if not set no traces are collected)
-func WithTracer(t traceapi.Tracer) APIHandlerOpt {
-	return apiHandlerOptFunc(func(s *APIHandler) *APIHandler {
+func WithTracer(t traceapi.Tracer) APIControllerOpt {
+	return apiControllerOptFunc(func(s *APIController) *APIController {
 		s.otelTracer = t
 		return s
 	})
@@ -81,31 +81,31 @@ func setJSONHeader(h http.Handler) http.Handler {
 
 type handlerFuncWithError func(http.ResponseWriter, *http.Request) error
 
-func (s *APIHandler) registerRoute(pattern string, handlerFunc handlerFuncWithError) {
-	handler := setJSONHeader(s.handleErrors(handlerFunc))
-	if s.otelMeter != nil {
-		handler = web.NewMetricsMiddleware(s.otelMeter, pattern).Chain(handler)
+func (c *APIController) registerRoute(pattern string, handlerFunc handlerFuncWithError) {
+	handler := setJSONHeader(c.handleErrors(handlerFunc))
+	if c.otelMeter != nil {
+		handler = web.NewMetricsMiddleware(c.otelMeter, pattern).Chain(handler)
 	}
-	if s.otelTracer != nil {
+	if c.otelTracer != nil {
 		handler = otelhttp.NewHandler(handler, pattern)
 	}
-	s.mux.Handle(pattern, handler)
+	c.mux.Handle(pattern, handler)
 }
 
-func (s *APIHandler) handleErrors(hwe handlerFuncWithError) http.HandlerFunc {
+func (c *APIController) handleErrors(hwe handlerFuncWithError) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := hwe(w, r)
 		if err != nil {
 			var apiErr apiError
 			if errors.As(err, &apiErr) {
-				s.logger.ErrorContext(r.Context(), apiErr.Error())
+				c.logger.ErrorContext(r.Context(), apiErr.Error())
 				resp, err2 := json.Marshal(apiErr)
 				if err2 != nil {
-					s.logger.ErrorContext(r.Context(), "cannot marshal APIError: "+err2.Error(), "error", err.Error())
+					c.logger.ErrorContext(r.Context(), "cannot marshal APIError: "+err2.Error(), "error", err.Error())
 				}
 				http.Error(w, string(resp), apiErr.status)
 			} else {
-				s.logger.ErrorContext(r.Context(), err.Error())
+				c.logger.ErrorContext(r.Context(), err.Error())
 				http.Error(w, `{}`, http.StatusInternalServerError)
 			}
 		}
