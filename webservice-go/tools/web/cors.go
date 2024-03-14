@@ -6,7 +6,7 @@ import (
 	"github.com/rs/cors"
 )
 
-// CORSMiddleware wraps github.com/rs/cors with no additional logic.
+// CORSMiddleware wraps github.com/rs/cors, it returns Forbidden when the headers do not match the same resource policy.
 type CORSMiddleware struct {
 	handler http.Handler
 	cors    *cors.Cors
@@ -30,6 +30,6 @@ func (cm *CORSMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if cm.cors.OriginAllowed(r) {
 		cm.handler.ServeHTTP(w, r)
 	} else {
-		http.Error(w, "cors", http.StatusNoContent)
+		http.Error(w, "cors", http.StatusForbidden)
 	}
 }
