@@ -6,14 +6,18 @@ import (
 	"net/http"
 )
 
-// CIDRProtectMiddleware
+// CIDRProtectMiddleware is a middleware that limits the inner handlers to a list of allowed CIDR ranges.
 type CIDRProtectMiddleware struct {
 	handler http.Handler
 
 	allowedNetworks []*net.IPNet
 }
 
-// NewCIDRProtectMiddleware
+// NewCIDRProtectMiddleware creates a new middleware that only will allow access the provided CIDR ranges
+// otherwise it will return 401 Unauthorized status.
+// The middleware will panic at initialization time if one of the allowedNetwork parameter cannot be parsed
+// as a CIDR range.
+// Also, this middleware always allows loopback address to reach inner handler.
 func NewCIDRProtectMiddleware(allowedNetworks ...string) *CIDRProtectMiddleware {
 	cpm := &CIDRProtectMiddleware{
 		handler:         nil,
