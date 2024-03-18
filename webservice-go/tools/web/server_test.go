@@ -55,7 +55,8 @@ func TestWithIdleTimeout(t *testing.T) {
 }
 
 func TestBaseHandler(t *testing.T) {
-	handler := baseHandler(http.DefaultServeMux)
+	s := &Server{}
+	handler := s.makeHandler(http.DefaultServeMux)
 	for _, tt := range []struct {
 		name           string
 		httpMethod     string

@@ -57,7 +57,7 @@ func NewServer(addr string, mux http.Handler, opts ...ServerOpt) *Server {
 func WithLogger(l *slog.Logger) ServerOpt {
 	return serverOptFunc(func(s *Server) *Server {
 		if l == nil {
-			l = slog.Default()
+			l = slog.Default() // logger cannot be nil
 		}
 		s.logger = l
 		s.server.ErrorLog = slog.NewLogLogger(l.Handler(), slog.LevelError)
@@ -89,6 +89,8 @@ func WithIdleTimeout(t time.Duration) ServerOpt {
 	})
 }
 
+// WithMiddlewares applies in order the middlewares provided as argument to the main Handler.
+// These middlewares do not apply to the base functions exposed by the Server like `/health`.
 func WithMiddlewares(mws ...MiddlewareChainer) ServerOpt {
 	return serverOptFunc(func(s *Server) *Server {
 		for _, mw := range mws {
@@ -101,7 +103,7 @@ func WithMiddlewares(mws ...MiddlewareChainer) ServerOpt {
 
 // StartServer starts the web server
 func (s *Server) StartServer(ctx context.Context) error {
-	s.server.Handler = baseHandler(s.mainHandler)
+	s.server.Handler = s.makeHandler(s.mainHandler)
 	s.logger.InfoContext(ctx, "Starting to serve requests on "+s.server.Addr)
 
 	err := s.server.ListenAndServe()
@@ -118,12 +120,14 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
-func baseHandler(h http.Handler) http.Handler {
+func (s *Server) makeHandler(h http.Handler) http.Handler {
 	mux := http.DefaultServeMux
-	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-	})
+	mux.HandleFunc("/health", s.healthHandlerFunc)
 	mux.Handle("/", h)
 	return mux
+}
+
+func (s *Server) healthHandlerFunc(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 }

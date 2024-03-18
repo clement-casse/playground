@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 )
 
+// respWriterWrapper wraps response writer to track the http status and the number of byte sent.
 type respWriterWrapper struct {
 	http.ResponseWriter
 	status  int
@@ -30,8 +31,7 @@ func (rw *respWriterWrapper) Write(p []byte) (int, error) {
 	return n, err
 }
 
-// bodyWrapper wraps a http.Request.Body (an io.ReadCloser) to track the number
-// of bytes read and the last error.
+// bodyWrapper wraps a http.Request.Body (an io.ReadCloser) to track the number of bytes read.
 type bodyWrapper struct {
 	io.ReadCloser
 	read atomic.Int64
