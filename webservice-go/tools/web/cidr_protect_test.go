@@ -8,6 +8,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewCIDRProtectMiddleware(t *testing.T) {
+	for _, tt := range []struct {
+		name            string
+		allowedNetworks []string
+		expectPanic     bool
+	}{
+		{
+			name:            "an empty allowed network should not panic",
+			allowedNetworks: []string{},
+			expectPanic:     false,
+		}, {
+			name:            "come well formated cidr range should not panic",
+			allowedNetworks: []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"},
+			expectPanic:     false,
+		}, {
+			name:            "a not parsable CIDR range should panic",
+			allowedNetworks: []string{"not a parsable cidr range"},
+			expectPanic:     true,
+		}, {
+			name:            "one allowed network not being a parsable CIDR range should panic",
+			allowedNetworks: []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.O.O/16", "100.64.0.0/10"}, // some O instead of 0 in 192.168/16
+			expectPanic:     true,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expectPanic {
+				assert.Panics(t, func() { _ = NewCIDRProtectMiddleware(tt.allowedNetworks...) })
+			} else {
+				assert.NotPanics(t, func() { _ = NewCIDRProtectMiddleware(tt.allowedNetworks...) })
+			}
+		})
+	}
+}
+
 func TestCIDRProtectMiddleware(t *testing.T) {
 	for _, tt := range []struct {
 		name            string
