@@ -46,6 +46,7 @@ func TestCIDRProtectMiddleware(t *testing.T) {
 	for _, tt := range []struct {
 		name            string
 		allowedNetworks []string
+		reqHeaders      map[string]string
 		remoteAddr      string
 		expectStatus    int
 	}{
@@ -58,6 +59,30 @@ func TestCIDRProtectMiddleware(t *testing.T) {
 			name:            "loopback should be allowed eventhough allowedNetworks is empty",
 			allowedNetworks: []string{},
 			remoteAddr:      "127.0.0.1:21345",
+			expectStatus:    http.StatusOK,
+		}, {
+			name:            "X-Real-Ip should take prcedence over request remoteAddr",
+			allowedNetworks: []string{},
+			reqHeaders:      map[string]string{"X-Real-Ip": "8.8.4.4"},
+			remoteAddr:      "127.0.0.1:21345",
+			expectStatus:    http.StatusUnauthorized,
+		}, {
+			name:            "X-Forwarded-For should take prcedence over request remoteAddr",
+			allowedNetworks: []string{},
+			reqHeaders:      map[string]string{"X-Forwarded-For": "8.8.4.4"},
+			remoteAddr:      "127.0.0.1:21345",
+			expectStatus:    http.StatusUnauthorized,
+		}, {
+			name:            "X-Forwarded-For should discard private ips",
+			allowedNetworks: []string{"192.168.0.0/16"},
+			reqHeaders:      map[string]string{"X-Forwarded-For": "8.8.4.4, 192.168.104.2"},
+			remoteAddr:      "127.0.0.1:21345",
+			expectStatus:    http.StatusUnauthorized,
+		}, {
+			name:            "X-Forwarded-For containing only private IP should fall back to remoteAddr",
+			allowedNetworks: []string{"10.0.0.0/8"},
+			reqHeaders:      map[string]string{"X-Forwarded-For": "172.18.19.20, 192.168.104.2"},
+			remoteAddr:      "10.0.1.254:21345",
 			expectStatus:    http.StatusOK,
 		}, {
 			name:            "allowing tailscale network for example",
@@ -113,13 +138,16 @@ func TestCIDRProtectMiddleware(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			cpm := NewCIDRProtectMiddleware(tt.allowedNetworks...)
-			chainedHandler := cpm.Chain(testingHandler)
+			protectededHandler := cpm.Chain(testingHandler)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
 			req.RemoteAddr = tt.remoteAddr
+			for rhKey, rhValue := range tt.reqHeaders {
+				req.Header.Set(rhKey, rhValue)
+			}
 
-			chainedHandler.ServeHTTP(w, req)
+			protectededHandler.ServeHTTP(w, req)
 
 			res := w.Result()
 			assert.Equal(t, tt.expectStatus, res.StatusCode)
