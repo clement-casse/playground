@@ -5,7 +5,7 @@ import (
 )
 
 // Router returns the http handler for serving REST API Server routes
-func (s *APIController) Router() http.Handler {
-	s.registerRoute("GET /api/somepath/...", nil)
-	return s.mux
+func (c *APIController) Router() http.Handler {
+	c.registerRoute("GET /api/somepath/...", nil)
+	return c.mux
 }
