@@ -52,9 +52,6 @@ func (cpm *CIDRProtectMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		if isIPAllowed {
 			break
 		}
-		if network == nil {
-			continue
-		}
 		isIPAllowed = network.Contains(ip)
 	}
 
