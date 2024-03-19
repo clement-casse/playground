@@ -5,16 +5,16 @@ coverage:
         threshold: 0.10%
       webservice-go/backend:
         target: auto
-        flags: [ webservice-go/backend ]
+        flags: [ webservice_backend ]
       webservice-go/frontend:
         target: auto
-        flags: [ webservice-go/frontend ]
+        flags: [ webservice_frontend ]
 
 flags:
-  webservice-go/backend:
+  webservice_backend:
     paths: [ ./coverage.out ]
     carryforward: true
-  webservice-go/frontend:
+  webservice_frontend:
     paths: [ ./web/app/coverage/coverage-final.json ]
     carryforward: true
 
