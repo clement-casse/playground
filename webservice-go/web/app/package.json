@@ -6,6 +6,7 @@
   "license": "ISC",
   "type": "module",
   "scripts": {
+    "lint": "./node_modules/.bin/eslint 'src/**/*.tsx'",
     "dev": "./node_modules/.bin/vite",
     "build": "./node_modules/.bin/tsc && ./node_modules/.bin/vite build",
     "test": "./node_modules/.bin/vitest",
@@ -19,17 +20,21 @@
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.2.21",
     "@types/react-test-renderer": "^18.0.7",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^1.4.0",
     "autoprefixer": "^10.4.18",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
     "postcss": "^8.4.35",
     "react-test-renderer": "^18.2.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.4.2",
+    "typescript-eslint": "^7.3.1",
     "vite": "^5.1.6",
     "vite-plugin-checker": "^0.6.4",
+    "vite-plugin-eslint": "^1.8.1",
     "vitest": "^1.4.0"
   }
 }
