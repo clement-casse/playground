@@ -1,7 +1,18 @@
 /** @type {import('vite').UserConfig} */
 
-import react from "@vitejs/plugin-react-swc";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import checker from 'vite-plugin-checker';
 
-export default ({
-  plugins: [react()],
+export default defineConfig({
+  plugins: [
+    react(),
+    checker({ typescript: true }),
+  ],
+  test: {
+    globals: true,
+    coverage: {
+      reporter: ['text', 'json'],
+    }
+  }
 })
