@@ -1,4 +1,4 @@
-name: "[webservice-go] Test and Build"
+name: "webservice-go/backend"
 on:
   pull_request:
     paths:

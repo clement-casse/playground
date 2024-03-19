@@ -1,4 +1,4 @@
-name: "[webservice-go/frontend] Test"
+name: "webservice-go/frontend"
 on:
   pull_request:
     paths:
