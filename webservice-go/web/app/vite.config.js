@@ -14,7 +14,8 @@ export default defineConfig({
   test: {
     globals: true,
     coverage: {
-      reporter: ['text', 'json'],
+      reporter: ['text', 'json-summary', 'json'],
+      reportOnFailure: true,
     }
   }
 })

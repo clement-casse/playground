@@ -6,15 +6,15 @@ coverage:
       webservice-go:
         target: auto
         flags: [ webservice-go ]
-      # webservice-front:
-      #   target: auto
-      #   flags: [ webservice-front ]
+      webservice-front:
+        target: auto
+        flags: [ webservice-front ]
 
 flags:
   webservice-go:
     paths: [ ./coverage.out ]
     carryforward: true
-  # webservice-front:
-  #   paths: [ ./web/app/coverage.json ]
-  #   carryforward: true
+  webservice-front:
+    paths: [ ./web/app/coverage/coverage-final.json ]
+    carryforward: true
 
