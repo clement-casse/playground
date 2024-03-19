@@ -14,6 +14,7 @@ export default defineConfig({
   test: {
     globals: true,
     coverage: {
+      exclude: ['.eslintrc.cjs', '*.config.js', '*.config.cjs'],
       reporter: ['text', 'json-summary', 'json'],
       reportOnFailure: true,
     }
