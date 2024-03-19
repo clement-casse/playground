@@ -24,6 +24,7 @@
 
         # Node & Tools
         nodejs_20
+        typescript
         tailwindcss
       ];
     in

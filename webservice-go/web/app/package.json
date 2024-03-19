@@ -4,9 +4,13 @@
   "description": "A Sample Application with Go Tailwind and a REST API",
   "author": "Clément Cassé",
   "license": "ISC",
+  "type": "module",
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js",
-    "build": "tsc && node ./node_modules/vite/bin/vite.js build"
+    "lint": "./node_modules/.bin/eslint 'src/**/*.tsx'",
+    "dev": "./node_modules/.bin/vite",
+    "build": "./node_modules/.bin/tsc && ./node_modules/.bin/vite build",
+    "test": "./node_modules/.bin/vitest",
+    "coverage": "./node_modules/.bin/vitest run --coverage"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -15,13 +19,22 @@
   "devDependencies": {
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.2.21",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
-    "@vitejs/plugin-react-swc": "^3.6.0",
+    "@types/react-test-renderer": "^18.0.7",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^1.4.0",
     "autoprefixer": "^10.4.18",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
     "postcss": "^8.4.35",
+    "react-test-renderer": "^18.2.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.4.2",
-    "vite": "^5.1.6"
+    "typescript-eslint": "^7.3.1",
+    "vite": "^5.1.6",
+    "vite-plugin-checker": "^0.6.4",
+    "vite-plugin-eslint": "^1.8.1",
+    "vitest": "^1.4.0"
   }
 }

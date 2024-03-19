@@ -1,8 +1,9 @@
-name: "[webservice-go] Test and Build"
+name: "webservice-go/backend"
 on:
   pull_request:
     paths:
-      - "webservice-go/**"
+      - "webservice-go/**/*.go"
+      - "webservice-go/go.*"
   push:
     branches:
       - 'main'
@@ -108,4 +109,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           codecov_yml_path: webservice-go/codecov.yaml
           flags: webservice-go
-
