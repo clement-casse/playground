@@ -19,7 +19,7 @@ type CIDRProtectMiddleware struct {
 // as a CIDR range.
 // Also, this middleware always allows loopback address to reach inner handler.
 func NewCIDRProtectMiddleware(allowedNetworks ...string) Middleware {
-	cpm := &CIDRProtectMiddleware{
+	m := &CIDRProtectMiddleware{
 		allowedNetworks: make([]*net.IPNet, 0, len(allowedNetworks)),
 	}
 	for _, allowedNetwork := range allowedNetworks {
@@ -27,12 +27,12 @@ func NewCIDRProtectMiddleware(allowedNetworks ...string) Middleware {
 		if err != nil {
 			panic(fmt.Sprintf("cannot parse network CIDR %s", allowedNetwork))
 		}
-		cpm.allowedNetworks = append(cpm.allowedNetworks, network)
+		m.allowedNetworks = append(m.allowedNetworks, network)
 	}
-	return cpm
+	return m
 }
 
-func (cpm *CIDRProtectMiddleware) Handle(next http.Handler) http.Handler {
+func (m *CIDRProtectMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip, err := GetRemoteAddr(r)
 		if err != nil {
@@ -40,7 +40,7 @@ func (cpm *CIDRProtectMiddleware) Handle(next http.Handler) http.Handler {
 			return
 		}
 		isIPAllowed := ip.IsLoopback()
-		for _, network := range cpm.allowedNetworks {
+		for _, network := range m.allowedNetworks {
 			if isIPAllowed {
 				break
 			}
