@@ -10,10 +10,10 @@ In this project, I make an attempt to restart the design from scratch of an Open
 ## Design decisions
 
 This projects makes an attempt to match the [Standard Go Project Layout][1].
-It also replicates structures that I found rather elegant (_for Go code ..._) in other Open-Source Go projects like the:
+It also replicates some code structures that I found rather elegant (_for Go code ..._) in other Open-Source Go projects:
 
 - [Functional Options frome Dave Cheney][2] extensively used in [open-telemetry/opentelemetry-go](https://github.com/open-telemetry/opentelemetry-go) where I first discovered it.
-- In [Handling errors in Go we apps][3], the author proposes a clean approach to decouple the error handling from the logic of the http handlers without any additional library.
+- In [Handling errors in Go web apps][3], the author proposes a clean approach to decouple the error handling from the logic of the http handlers without any additional library.
 
 
 ## References
