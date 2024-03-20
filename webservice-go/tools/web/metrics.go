@@ -10,8 +10,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
-// MetricsMiddleware
-type MetricsMiddleware struct {
+type metricsMiddleware struct {
 	pattern string
 
 	requestDurationHist  api.Int64Histogram
@@ -21,7 +20,7 @@ type MetricsMiddleware struct {
 
 // NewMetricsMiddleware creates a new metric monitoring middleware
 func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
-	m := &MetricsMiddleware{pattern: pattern}
+	m := &metricsMiddleware{pattern: pattern}
 	var err error
 	m.requestDurationHist, err = otelMeter.Int64Histogram(
 		"http.server.request.duration",
@@ -51,7 +50,7 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
 	return m
 }
 
-func (m *MetricsMiddleware) Handle(next http.Handler) http.Handler {
+func (m *metricsMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		now := time.Now()

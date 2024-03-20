@@ -6,17 +6,16 @@ import (
 	"time"
 )
 
-// AccessLoggingMiddleware handles requests and log with the logger requests that pass through it
-type AccessLoggingMiddleware struct {
+type accessLoggingMiddleware struct {
 	logger *slog.Logger
 }
 
-// NewAccessLoggingMiddleware creates a middleware that logs requests that pass through it
+// NewAccessLoggingMiddleware creates a middleware that logs requests that pass through it.
 func NewAccessLoggingMiddleware(logger *slog.Logger) Middleware {
-	return &AccessLoggingMiddleware{logger}
+	return &accessLoggingMiddleware{logger}
 }
 
-func (m *AccessLoggingMiddleware) Handle(next http.Handler) http.Handler {
+func (m *accessLoggingMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		rww := newRespWriterWrapper(w)

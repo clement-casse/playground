@@ -10,16 +10,16 @@ import (
 	"go.opentelemetry.io/otel/metric/noop"
 )
 
-// RecoveryMiddleware handles inner handlers that panic and log reason as an error
-type RecoveryMiddleware struct {
+type recoveryMiddleware struct {
 	logger *slog.Logger
 
 	errorCounter metricapi.Int64Counter
 }
 
-// NewRecoveryMiddleware creates a middleware that tries to recover from panics that happen when they reach the it and returns a 500 instead
+// NewRecoveryMiddleware creates a middleware that tries to recover from panics that
+// happen when they reach the it and returns a 500 instead
 func NewRecoveryMiddleware(logger *slog.Logger, meter metricapi.Meter) Middleware {
-	m := &RecoveryMiddleware{logger: logger}
+	m := &recoveryMiddleware{logger: logger}
 	if meter == nil {
 		meter = noop.NewMeterProvider().Meter("noop-meter")
 	}
@@ -33,7 +33,7 @@ func NewRecoveryMiddleware(logger *slog.Logger, meter metricapi.Meter) Middlewar
 	return m
 }
 
-func (m *RecoveryMiddleware) Handle(next http.Handler) http.Handler {
+func (m *recoveryMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if q := recover(); q != nil {
