@@ -92,7 +92,7 @@ type testMiddleware struct {
 	middlewareFunc func(http.Handler) http.Handler
 }
 
-func (tm *testMiddleware) Chain(h http.Handler) http.Handler {
+func (tm *testMiddleware) Handle(h http.Handler) http.Handler {
 	return tm.middlewareFunc(h)
 }
 
@@ -128,23 +128,23 @@ func TestWithMiddleware(t *testing.T) {
 
 	for _, tt := range []struct {
 		name             string
-		middlewares      []MiddlewareChainer
+		middlewares      []Middleware
 		expectTestHeader string
 		expectBody       string
 	}{
 		{
 			name:             "no middlewares",
-			middlewares:      []MiddlewareChainer{},
+			middlewares:      []Middleware{},
 			expectTestHeader: "No middlewares",
 			expectBody:       "Test Body",
 		}, {
 			name:             "with one middleware",
-			middlewares:      []MiddlewareChainer{testMiddleware1},
+			middlewares:      []Middleware{testMiddleware1},
 			expectTestHeader: "Middleware#1",
 			expectBody:       "Middleware 1: Test Body",
 		}, {
 			name:             "with two middlewares the last takes precedence over the previous ones",
-			middlewares:      []MiddlewareChainer{testMiddleware1, testMiddleware2},
+			middlewares:      []Middleware{testMiddleware1, testMiddleware2},
 			expectTestHeader: "Middleware#2",
 			expectBody:       "Middleware 1: Test Body",
 		},

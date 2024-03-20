@@ -12,15 +12,14 @@ import (
 
 // RecoveryMiddleware handles inner handlers that panic and log reason as an error
 type RecoveryMiddleware struct {
-	handler http.Handler
-	logger  *slog.Logger
+	logger *slog.Logger
 
 	errorCounter metricapi.Int64Counter
 }
 
 // NewRecoveryMiddleware creates a middleware that tries to recover from panics that happen when they reach the it and returns a 500 instead
 func NewRecoveryMiddleware(logger *slog.Logger, meter metricapi.Meter) *RecoveryMiddleware {
-	rm := &RecoveryMiddleware{handler: nil, logger: logger}
+	rm := &RecoveryMiddleware{logger: logger}
 	if meter == nil {
 		meter = noop.NewMeterProvider().Meter("noop-meter")
 	}
@@ -34,19 +33,16 @@ func NewRecoveryMiddleware(logger *slog.Logger, meter metricapi.Meter) *Recovery
 	return rm
 }
 
-func (rm *RecoveryMiddleware) Chain(handler http.Handler) http.Handler {
-	rm.handler = handler
-	return rm
-}
+func (rm *RecoveryMiddleware) Handle(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if q := recover(); q != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				rm.errorCounter.Add(r.Context(), 1)
+				rm.logger.ErrorContext(r.Context(), fmt.Sprintf("recovering from a panic: %+v", q))
+			}
+		}()
 
-func (rm *RecoveryMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if q := recover(); q != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			rm.errorCounter.Add(r.Context(), 1)
-			rm.logger.ErrorContext(r.Context(), fmt.Sprintf("recovering from a panic: %+v", q))
-		}
-	}()
-
-	rm.handler.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
+	})
 }

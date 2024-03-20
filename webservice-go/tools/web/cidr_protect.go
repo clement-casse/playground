@@ -8,8 +8,6 @@ import (
 
 // CIDRProtectMiddleware is a middleware that limits the inner handlers to a list of allowed CIDR ranges.
 type CIDRProtectMiddleware struct {
-	handler http.Handler
-
 	allowedNetworks []*net.IPNet
 }
 
@@ -22,7 +20,6 @@ type CIDRProtectMiddleware struct {
 // Also, this middleware always allows loopback address to reach inner handler.
 func NewCIDRProtectMiddleware(allowedNetworks ...string) *CIDRProtectMiddleware {
 	cpm := &CIDRProtectMiddleware{
-		handler:         nil,
 		allowedNetworks: make([]*net.IPNet, 0, len(allowedNetworks)),
 	}
 	for _, allowedNetwork := range allowedNetworks {
@@ -35,27 +32,24 @@ func NewCIDRProtectMiddleware(allowedNetworks ...string) *CIDRProtectMiddleware 
 	return cpm
 }
 
-func (cpm *CIDRProtectMiddleware) Chain(handler http.Handler) http.Handler {
-	cpm.handler = handler
-	return cpm
-}
-
-func (cpm *CIDRProtectMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ip, err := GetRemoteAddr(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	isIPAllowed := ip.IsLoopback()
-	for _, network := range cpm.allowedNetworks {
-		if isIPAllowed {
-			break
+func (cpm *CIDRProtectMiddleware) Handle(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip, err := GetRemoteAddr(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		isIPAllowed = network.Contains(ip)
-	}
+		isIPAllowed := ip.IsLoopback()
+		for _, network := range cpm.allowedNetworks {
+			if isIPAllowed {
+				break
+			}
+			isIPAllowed = network.Contains(ip)
+		}
 
-	if isIPAllowed {
-		cpm.handler.ServeHTTP(w, r)
-	}
-	http.Error(w, "endpoint is protected", http.StatusUnauthorized)
+		if isIPAllowed {
+			next.ServeHTTP(w, r)
+		}
+		http.Error(w, "endpoint is protected", http.StatusUnauthorized)
+	})
 }

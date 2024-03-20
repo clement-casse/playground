@@ -12,7 +12,6 @@ import (
 
 // MetricsMiddleware
 type MetricsMiddleware struct {
-	handler http.Handler
 	pattern string
 
 	requestDurationHist  api.Int64Histogram
@@ -52,40 +51,37 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) *MetricsMiddlewar
 	return mm
 }
 
-func (mm *MetricsMiddleware) Chain(handler http.Handler) http.Handler {
-	mm.handler = handler
-	return mm
-}
+func (mm *MetricsMiddleware) Handle(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		now := time.Now()
+		rww := newRespWriterWrapper(w)
 
-func (mm *MetricsMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	now := time.Now()
-	rww := newRespWriterWrapper(w)
+		var bw bodyWrapper
+		// if request body is nil or NoBody, we don't want to mutate the body as it
+		// will affect the identity of it in an unforeseeable way because we assert
+		// ReadCloser fulfills a certain interface and it is indeed nil or NoBody.
+		if r.Body != nil && r.Body != http.NoBody {
+			bw.ReadCloser = r.Body
+			r.Body = &bw
+		}
 
-	var bw bodyWrapper
-	// if request body is nil or NoBody, we don't want to mutate the body as it
-	// will affect the identity of it in an unforeseeable way because we assert
-	// ReadCloser fulfills a certain interface and it is indeed nil or NoBody.
-	if r.Body != nil && r.Body != http.NoBody {
-		bw.ReadCloser = r.Body
-		r.Body = &bw
-	}
+		next.ServeHTTP(rww, r)
 
-	mm.handler.ServeHTTP(rww, r)
+		var httpRouteKey string
+		if mm.pattern == "" {
+			httpRouteKey = r.URL.Path
+		} else {
+			httpRouteKey = mm.pattern
+		}
+		o := metric.WithAttributes(
+			semconv.HTTPRequestMethodKey.String(r.Method),
+			semconv.HTTPResponseStatusCode(rww.status),
+			semconv.HTTPRouteKey.String(httpRouteKey),
+		)
 
-	var httpRouteKey string
-	if mm.pattern == "" {
-		httpRouteKey = r.URL.Path
-	} else {
-		httpRouteKey = mm.pattern
-	}
-	o := metric.WithAttributes(
-		semconv.HTTPRequestMethodKey.String(r.Method),
-		semconv.HTTPResponseStatusCode(rww.status),
-		semconv.HTTPRouteKey.String(httpRouteKey),
-	)
-
-	mm.requestDurationHist.Record(ctx, time.Since(now).Milliseconds(), o)
-	mm.requestBytesCounter.Add(ctx, bw.read.Load(), o)
-	mm.responseBytesCounter.Add(ctx, rww.written.Load(), o)
+		mm.requestDurationHist.Record(ctx, time.Since(now).Milliseconds(), o)
+		mm.requestBytesCounter.Add(ctx, bw.read.Load(), o)
+		mm.responseBytesCounter.Add(ctx, rww.written.Load(), o)
+	})
 }

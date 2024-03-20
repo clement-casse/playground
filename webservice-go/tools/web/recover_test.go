@@ -47,7 +47,7 @@ func TestRecoveryMiddleware(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			rm := NewRecoveryMiddleware(slog.Default(), nil)
-			testServer := httptest.NewServer(rm.Chain(tt.handlerFunc))
+			testServer := httptest.NewServer(rm.Handle(tt.handlerFunc))
 			defer testServer.Close()
 
 			res, err := http.Get(testServer.URL)
@@ -62,7 +62,7 @@ func TestRecoveryMiddlewareLogsPanicReason(t *testing.T) {
 	strLogger := slog.New(slog.NewTextHandler(&recorder, nil))
 
 	rm := NewRecoveryMiddleware(strLogger, nil)
-	testServer := httptest.NewServer(rm.Chain(panicingHandler))
+	testServer := httptest.NewServer(rm.Handle(panicingHandler))
 
 	_, err := http.Get(testServer.URL)
 	assert.NilError(t, err)
@@ -85,7 +85,7 @@ func TestRecoveryMiddlewareIncrementsCounter(t *testing.T) {
 	testMeter := testProvider.Meter("test-meter")
 
 	rm := NewRecoveryMiddleware(strLogger, testMeter)
-	testServer := httptest.NewServer(rm.Chain(panicingHandler))
+	testServer := httptest.NewServer(rm.Handle(panicingHandler))
 	defer testServer.Close()
 
 	var err error

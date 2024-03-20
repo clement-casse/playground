@@ -69,7 +69,7 @@ func TestJWTVerification(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			jm := NewJWTAuthMiddleware(secretKey)
-			testServer := httptest.NewServer(jm.Chain(testingHandler))
+			testServer := httptest.NewServer(jm.Handle(testingHandler))
 			defer testServer.Close()
 			req, err := http.NewRequest(http.MethodGet, testServer.URL, nil)
 			assert.Nil(t, err)

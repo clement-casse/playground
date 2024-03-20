@@ -44,7 +44,7 @@ func TestCORSMiddleware(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			cm := NewCORSMiddleware(tt.allowedOrigins...)
-			testServer := httptest.NewServer(cm.Chain(testingHandler))
+			testServer := httptest.NewServer(cm.Handle(testingHandler))
 			defer testServer.Close()
 			req, err := http.NewRequest(http.MethodGet, testServer.URL, nil)
 			assert.Nil(t, err)

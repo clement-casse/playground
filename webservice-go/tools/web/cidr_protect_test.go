@@ -128,7 +128,7 @@ func TestCIDRProtectMiddleware(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			cpm := NewCIDRProtectMiddleware(tt.allowedNetworks...)
-			protectededHandler := cpm.Chain(testingHandler)
+			protectededHandler := cpm.Handle(testingHandler)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
