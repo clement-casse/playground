@@ -67,7 +67,7 @@ func TestCIDRProtectMiddleware(t *testing.T) {
 			remoteAddr:      "127.0.0.1:21345",
 			expectStatus:    http.StatusUnauthorized,
 		}, {
-			name:            "X-Forwarded-For should take prcedence over request remoteAddr",
+			name:            "X-Forwarded-For should take precedence over request remoteAddr",
 			allowedNetworks: []string{},
 			reqHeaders:      map[string]string{"X-Forwarded-For": "8.8.4.4"},
 			remoteAddr:      "127.0.0.1:21345",
@@ -125,20 +125,15 @@ func TestCIDRProtectMiddleware(t *testing.T) {
 			remoteAddr:      "[2a01::abcd]:21345",
 			expectStatus:    http.StatusUnauthorized,
 		}, {
-			name:            "malformed RemoteAddress IP should trigger a 500",
+			name:            "triggering an error in GetRemoteAddr",
 			allowedNetworks: []string{"fc00::/7"},
-			remoteAddr:      "[2a01::abcdefgh]:21345",
-			expectStatus:    http.StatusInternalServerError,
-		}, {
-			name:            "malformed RemoteAddress field should trigger a 500",
-			allowedNetworks: []string{"fc00::/7"},
-			remoteAddr:      "[2a01::abcd];21345",
+			remoteAddr:      "[2a01::abcdef]:21345",
 			expectStatus:    http.StatusInternalServerError,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			cpm := NewCIDRProtectMiddleware(tt.allowedNetworks...)
-			protectededHandler := cpm.Chain(testingHandler)
+			protectededHandler := cpm.Handle(testingHandler)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/", nil)

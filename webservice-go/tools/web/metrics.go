@@ -10,9 +10,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
-// MetricsMiddleware
-type MetricsMiddleware struct {
-	handler http.Handler
+type metricsMiddleware struct {
 	pattern string
 
 	requestDurationHist  api.Int64Histogram
@@ -21,10 +19,10 @@ type MetricsMiddleware struct {
 }
 
 // NewMetricsMiddleware creates a new metric monitoring middleware
-func NewMetricsMiddleware(otelMeter api.Meter, pattern string) *MetricsMiddleware {
-	mm := &MetricsMiddleware{pattern: pattern}
+func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
+	m := &metricsMiddleware{pattern: pattern}
 	var err error
-	mm.requestDurationHist, err = otelMeter.Int64Histogram(
+	m.requestDurationHist, err = otelMeter.Int64Histogram(
 		"http.server.request.duration",
 		metric.WithUnit("ms"),
 		api.WithDescription("Measures the duration of inbound HTTP requests."),
@@ -32,7 +30,7 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) *MetricsMiddlewar
 	if err != nil {
 		otel.Handle(err)
 	}
-	mm.requestBytesCounter, err = otelMeter.Int64Counter(
+	m.requestBytesCounter, err = otelMeter.Int64Counter(
 		string(semconv.HTTPRequestBodySizeKey),
 		metric.WithUnit("By"),
 		api.WithDescription("Measures the size of HTTP request messages."),
@@ -40,7 +38,7 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) *MetricsMiddlewar
 	if err != nil {
 		otel.Handle(err)
 	}
-	mm.responseBytesCounter, err = otelMeter.Int64Counter(
+	m.responseBytesCounter, err = otelMeter.Int64Counter(
 		string(semconv.HTTPResponseBodySizeKey),
 		metric.WithUnit("By"),
 		api.WithDescription("Measures the size of HTTP response messages."),
@@ -49,43 +47,40 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) *MetricsMiddlewar
 		otel.Handle(err)
 	}
 
-	return mm
+	return m
 }
 
-func (mm *MetricsMiddleware) Chain(handler http.Handler) http.Handler {
-	mm.handler = handler
-	return mm
-}
+func (m *metricsMiddleware) Handle(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		now := time.Now()
+		rww := newRespWriterWrapper(w)
 
-func (mm *MetricsMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	now := time.Now()
-	rww := newRespWriterWrapper(w)
+		var bw bodyWrapper
+		// if request body is nil or NoBody, we don't want to mutate the body as it
+		// will affect the identity of it in an unforeseeable way because we assert
+		// ReadCloser fulfills a certain interface and it is indeed nil or NoBody.
+		if r.Body != nil && r.Body != http.NoBody {
+			bw.ReadCloser = r.Body
+			r.Body = &bw
+		}
 
-	var bw bodyWrapper
-	// if request body is nil or NoBody, we don't want to mutate the body as it
-	// will affect the identity of it in an unforeseeable way because we assert
-	// ReadCloser fulfills a certain interface and it is indeed nil or NoBody.
-	if r.Body != nil && r.Body != http.NoBody {
-		bw.ReadCloser = r.Body
-		r.Body = &bw
-	}
+		next.ServeHTTP(rww, r)
 
-	mm.handler.ServeHTTP(rww, r)
+		var httpRouteKey string
+		if m.pattern == "" {
+			httpRouteKey = r.URL.Path
+		} else {
+			httpRouteKey = m.pattern
+		}
+		o := metric.WithAttributes(
+			semconv.HTTPRequestMethodKey.String(r.Method),
+			semconv.HTTPResponseStatusCode(rww.status),
+			semconv.HTTPRouteKey.String(httpRouteKey),
+		)
 
-	var httpRouteKey string
-	if mm.pattern == "" {
-		httpRouteKey = r.URL.Path
-	} else {
-		httpRouteKey = mm.pattern
-	}
-	o := metric.WithAttributes(
-		semconv.HTTPRequestMethodKey.String(r.Method),
-		semconv.HTTPResponseStatusCode(rww.status),
-		semconv.HTTPRouteKey.String(httpRouteKey),
-	)
-
-	mm.requestDurationHist.Record(ctx, time.Since(now).Milliseconds(), o)
-	mm.requestBytesCounter.Add(ctx, bw.read.Load(), o)
-	mm.responseBytesCounter.Add(ctx, rww.written.Load(), o)
+		m.requestDurationHist.Record(ctx, time.Since(now).Milliseconds(), o)
+		m.requestBytesCounter.Add(ctx, bw.read.Load(), o)
+		m.responseBytesCounter.Add(ctx, rww.written.Load(), o)
+	})
 }

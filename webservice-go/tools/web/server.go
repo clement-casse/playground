@@ -34,6 +34,11 @@ func (fn serverOptFunc) applyOpt(s *Server) *Server {
 	return fn(s)
 }
 
+// Middleware is an interface that allows to chain middlewares on an handler
+type Middleware interface {
+	Handle(next http.Handler) http.Handler
+}
+
 // NewServer creates a simple HTTP server instance
 func NewServer(addr string, mux http.Handler, opts ...ServerOpt) *Server {
 	srv := &Server{
@@ -91,11 +96,11 @@ func WithIdleTimeout(t time.Duration) ServerOpt {
 
 // WithMiddlewares applies in order the middlewares provided as argument to the main Handler.
 // These middlewares do not apply to the base functions exposed by the Server like `/health`.
-func WithMiddlewares(mws ...MiddlewareChainer) ServerOpt {
+func WithMiddlewares(mws ...Middleware) ServerOpt {
 	return serverOptFunc(func(s *Server) *Server {
 		for _, mw := range mws {
 			origHandler := s.mainHandler
-			s.mainHandler = mw.Chain(origHandler)
+			s.mainHandler = mw.Handle(origHandler)
 		}
 		return s
 	})

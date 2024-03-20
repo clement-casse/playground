@@ -81,16 +81,16 @@ func setJSONHeader(h http.Handler) http.Handler {
 
 type handlerFuncWithError func(http.ResponseWriter, *http.Request) error
 
-func (c *APIController) registerRoute(pattern string, handlerFunc handlerFuncWithError, middlewares ...web.MiddlewareChainer) {
+func (c *APIController) registerRoute(pattern string, handlerFunc handlerFuncWithError, middlewares ...web.Middleware) {
 	handler := setJSONHeader(c.handleErrors(handlerFunc))
 	if c.otelMeter != nil {
-		handler = web.NewMetricsMiddleware(c.otelMeter, pattern).Chain(handler)
+		handler = web.NewMetricsMiddleware(c.otelMeter, pattern).Handle(handler)
 	}
 	if c.otelTracer != nil {
 		handler = otelhttp.NewHandler(handler, pattern)
 	}
 	for _, mw := range middlewares {
-		handler = mw.Chain(handler)
+		handler = mw.Handle(handler)
 	}
 	c.mux.Handle(pattern, handler)
 }

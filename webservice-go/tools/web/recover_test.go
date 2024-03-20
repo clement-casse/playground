@@ -8,14 +8,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strings"
 	"testing"
 
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata/metricdatatest"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -47,11 +46,11 @@ func TestRecoveryMiddleware(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			rm := NewRecoveryMiddleware(slog.Default(), nil)
-			testServer := httptest.NewServer(rm.Chain(tt.handlerFunc))
+			testServer := httptest.NewServer(rm.Handle(tt.handlerFunc))
 			defer testServer.Close()
 
 			res, err := http.Get(testServer.URL)
-			assert.NilError(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.expectStatus, res.StatusCode, "unexpected status")
 		})
 	}
@@ -62,14 +61,14 @@ func TestRecoveryMiddlewareLogsPanicReason(t *testing.T) {
 	strLogger := slog.New(slog.NewTextHandler(&recorder, nil))
 
 	rm := NewRecoveryMiddleware(strLogger, nil)
-	testServer := httptest.NewServer(rm.Chain(panicingHandler))
+	testServer := httptest.NewServer(rm.Handle(panicingHandler))
 
 	_, err := http.Get(testServer.URL)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	testServer.Close()
 
 	logLines := recorder.String()
-	assert.Assert(t, strings.Contains(logLines, panicReason), "recovery middleware does not print the inner panic reason")
+	assert.Contains(t, logLines, panicReason, "recovery middleware does not print the inner panic reason")
 }
 
 func TestRecoveryMiddlewareIncrementsCounter(t *testing.T) {
@@ -79,24 +78,24 @@ func TestRecoveryMiddlewareIncrementsCounter(t *testing.T) {
 	ctx := context.Background()
 	mReader := metric.NewManualReader()
 	defer func() {
-		assert.NilError(t, mReader.Shutdown(ctx))
+		assert.NoError(t, mReader.Shutdown(ctx))
 	}()
 	testProvider := metric.NewMeterProvider(metric.WithReader(mReader))
 	testMeter := testProvider.Meter("test-meter")
 
 	rm := NewRecoveryMiddleware(strLogger, testMeter)
-	testServer := httptest.NewServer(rm.Chain(panicingHandler))
+	testServer := httptest.NewServer(rm.Handle(panicingHandler))
 	defer testServer.Close()
 
 	var err error
 	_, err = http.Get(testServer.URL)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	_, err = http.Get(testServer.URL)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 
 	var rmData metricdata.ResourceMetrics
 	err = mReader.Collect(ctx, &rmData)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 
 	for _, mData := range rmData.ScopeMetrics {
 		expectedMetricData := map[string]metricdata.Aggregation{
