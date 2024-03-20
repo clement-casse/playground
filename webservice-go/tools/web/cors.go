@@ -21,10 +21,10 @@ func NewCORSMiddleware(allowsOrigins ...string) Middleware {
 	}
 }
 
-func (cm *CORSMiddleware) Handle(next http.Handler) http.Handler {
+func (m *CORSMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cm.HandlerFunc(w, r)
-		if cm.OriginAllowed(r) {
+		m.HandlerFunc(w, r)
+		if m.OriginAllowed(r) {
 			next.ServeHTTP(w, r)
 		} else {
 			http.Error(w, "cors", http.StatusForbidden)

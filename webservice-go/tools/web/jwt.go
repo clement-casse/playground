@@ -25,7 +25,7 @@ func NewJWTAuthMiddleware(secretKey []byte) Middleware {
 	}
 }
 
-func (jm *JWTAuthMiddleware) Handle(next http.Handler) http.Handler {
+func (m *JWTAuthMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bearerToken := r.Header.Get("Authorization")
 		if bearerToken == "" {
@@ -37,8 +37,8 @@ func (jm *JWTAuthMiddleware) Handle(next http.Handler) http.Handler {
 		}
 		reqToken := strings.Split(bearerToken, " ")[1]
 		claims := &jwt.RegisteredClaims{}
-		token, err := jm.parser.ParseWithClaims(reqToken, claims, func(_ *jwt.Token) (any, error) {
-			return jm.secretKey, nil
+		token, err := m.parser.ParseWithClaims(reqToken, claims, func(_ *jwt.Token) (any, error) {
+			return m.secretKey, nil
 		})
 		if err != nil {
 			if errors.Is(err, jwt.ErrSignatureInvalid) ||

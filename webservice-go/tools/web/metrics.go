@@ -21,9 +21,9 @@ type MetricsMiddleware struct {
 
 // NewMetricsMiddleware creates a new metric monitoring middleware
 func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
-	mm := &MetricsMiddleware{pattern: pattern}
+	m := &MetricsMiddleware{pattern: pattern}
 	var err error
-	mm.requestDurationHist, err = otelMeter.Int64Histogram(
+	m.requestDurationHist, err = otelMeter.Int64Histogram(
 		"http.server.request.duration",
 		metric.WithUnit("ms"),
 		api.WithDescription("Measures the duration of inbound HTTP requests."),
@@ -31,7 +31,7 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
 	if err != nil {
 		otel.Handle(err)
 	}
-	mm.requestBytesCounter, err = otelMeter.Int64Counter(
+	m.requestBytesCounter, err = otelMeter.Int64Counter(
 		string(semconv.HTTPRequestBodySizeKey),
 		metric.WithUnit("By"),
 		api.WithDescription("Measures the size of HTTP request messages."),
@@ -39,7 +39,7 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
 	if err != nil {
 		otel.Handle(err)
 	}
-	mm.responseBytesCounter, err = otelMeter.Int64Counter(
+	m.responseBytesCounter, err = otelMeter.Int64Counter(
 		string(semconv.HTTPResponseBodySizeKey),
 		metric.WithUnit("By"),
 		api.WithDescription("Measures the size of HTTP response messages."),
@@ -48,10 +48,10 @@ func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
 		otel.Handle(err)
 	}
 
-	return mm
+	return m
 }
 
-func (mm *MetricsMiddleware) Handle(next http.Handler) http.Handler {
+func (m *MetricsMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		now := time.Now()
@@ -69,10 +69,10 @@ func (mm *MetricsMiddleware) Handle(next http.Handler) http.Handler {
 		next.ServeHTTP(rww, r)
 
 		var httpRouteKey string
-		if mm.pattern == "" {
+		if m.pattern == "" {
 			httpRouteKey = r.URL.Path
 		} else {
-			httpRouteKey = mm.pattern
+			httpRouteKey = m.pattern
 		}
 		o := metric.WithAttributes(
 			semconv.HTTPRequestMethodKey.String(r.Method),
@@ -80,8 +80,8 @@ func (mm *MetricsMiddleware) Handle(next http.Handler) http.Handler {
 			semconv.HTTPRouteKey.String(httpRouteKey),
 		)
 
-		mm.requestDurationHist.Record(ctx, time.Since(now).Milliseconds(), o)
-		mm.requestBytesCounter.Add(ctx, bw.read.Load(), o)
-		mm.responseBytesCounter.Add(ctx, rww.written.Load(), o)
+		m.requestDurationHist.Record(ctx, time.Since(now).Milliseconds(), o)
+		m.requestBytesCounter.Add(ctx, bw.read.Load(), o)
+		m.responseBytesCounter.Add(ctx, rww.written.Load(), o)
 	})
 }

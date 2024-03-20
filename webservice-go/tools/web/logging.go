@@ -16,14 +16,14 @@ func NewAccessLoggingMiddleware(logger *slog.Logger) Middleware {
 	return &AccessLoggingMiddleware{logger}
 }
 
-func (lm *AccessLoggingMiddleware) Handle(next http.Handler) http.Handler {
+func (m *AccessLoggingMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		rww := newRespWriterWrapper(w)
 
 		next.ServeHTTP(rww, r)
 
-		lm.logger.InfoContext(r.Context(), "Incoming request",
+		m.logger.InfoContext(r.Context(), "Incoming request",
 			slog.Group("request",
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
