@@ -34,6 +34,7 @@ func (fn serverOptFunc) applyOpt(s *Server) *Server {
 	return fn(s)
 }
 
+// Middleware is an interface that allows to chain middlewares on an handler
 type Middleware interface {
 	Handle(next http.Handler) http.Handler
 }

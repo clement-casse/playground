@@ -12,7 +12,7 @@ type CORSMiddleware struct {
 }
 
 // NewCORSMiddleware
-func NewCORSMiddleware(allowsOrigins ...string) *CORSMiddleware {
+func NewCORSMiddleware(allowsOrigins ...string) Middleware {
 	if len(allowsOrigins) == 0 {
 		allowsOrigins = []string{"*"}
 	}

@@ -20,7 +20,7 @@ type JWTAuthMiddleware struct {
 }
 
 // NewJWTAuthMiddleware creates a JWTAuthMiddleware with the giver secret key used to check requests signature
-func NewJWTAuthMiddleware(secretKey []byte) *JWTAuthMiddleware {
+func NewJWTAuthMiddleware(secretKey []byte) Middleware {
 	return &JWTAuthMiddleware{
 		handler:   nil,
 		parser:    jwt.NewParser(),

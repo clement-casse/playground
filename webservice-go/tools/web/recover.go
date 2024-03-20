@@ -18,7 +18,7 @@ type RecoveryMiddleware struct {
 }
 
 // NewRecoveryMiddleware creates a middleware that tries to recover from panics that happen when they reach the it and returns a 500 instead
-func NewRecoveryMiddleware(logger *slog.Logger, meter metricapi.Meter) *RecoveryMiddleware {
+func NewRecoveryMiddleware(logger *slog.Logger, meter metricapi.Meter) Middleware {
 	rm := &RecoveryMiddleware{logger: logger}
 	if meter == nil {
 		meter = noop.NewMeterProvider().Meter("noop-meter")

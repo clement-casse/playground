@@ -4,28 +4,22 @@ import "net/http"
 
 // RateLimiterMiddleware
 type RateLimiterMiddleware struct {
-	handler http.Handler
 }
 
 // NewRateLimiterMiddleware
 func NewRateLimiterMiddleware() *RateLimiterMiddleware {
-	rlm := &RateLimiterMiddleware{
-		handler: nil,
-	}
+	rlm := &RateLimiterMiddleware{}
 
 	return rlm
 }
 
-func (rlm *RateLimiterMiddleware) Chain(handler http.Handler) http.Handler {
-	rlm.handler = handler
-	return rlm
-}
-
-func (rlm *RateLimiterMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	ip, err := GetRemoteAddr(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	_, _ = ctx, ip
+func (rlm *RateLimiterMiddleware) Handle(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		ip, err := GetRemoteAddr(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		_, _, _ = ctx, ip, next
+	})
 }

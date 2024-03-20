@@ -12,11 +12,11 @@ type AccessLoggingMiddleware struct {
 }
 
 // NewAccessLoggingMiddleware creates a middleware that logs requests that pass through it
-func NewAccessLoggingMiddleware(logger *slog.Logger) *AccessLoggingMiddleware {
+func NewAccessLoggingMiddleware(logger *slog.Logger) Middleware {
 	return &AccessLoggingMiddleware{logger}
 }
 
-func (lm *AccessLoggingMiddleware) Chain(next http.Handler) http.Handler {
+func (lm *AccessLoggingMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		rww := newRespWriterWrapper(w)

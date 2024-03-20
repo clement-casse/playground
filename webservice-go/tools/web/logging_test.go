@@ -16,7 +16,7 @@ func TestLoggingMiddleware(t *testing.T) {
 	var recorder bytes.Buffer
 	recordedLogger := slog.New(slog.NewTextHandler(&recorder, nil))
 	lm := NewAccessLoggingMiddleware(recordedLogger)
-	testServer := httptest.NewServer(lm.Chain(testingHandler))
+	testServer := httptest.NewServer(lm.Handle(testingHandler))
 	req, err := http.NewRequest(http.MethodGet, testServer.URL, nil)
 	assert.NilError(t, err)
 

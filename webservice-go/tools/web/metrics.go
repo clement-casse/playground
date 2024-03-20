@@ -20,7 +20,7 @@ type MetricsMiddleware struct {
 }
 
 // NewMetricsMiddleware creates a new metric monitoring middleware
-func NewMetricsMiddleware(otelMeter api.Meter, pattern string) *MetricsMiddleware {
+func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
 	mm := &MetricsMiddleware{pattern: pattern}
 	var err error
 	mm.requestDurationHist, err = otelMeter.Int64Histogram(

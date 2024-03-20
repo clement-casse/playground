@@ -18,7 +18,7 @@ type CIDRProtectMiddleware struct {
 // The middleware will panic at initialization time if one of the allowedNetwork parameter cannot be parsed
 // as a CIDR range.
 // Also, this middleware always allows loopback address to reach inner handler.
-func NewCIDRProtectMiddleware(allowedNetworks ...string) *CIDRProtectMiddleware {
+func NewCIDRProtectMiddleware(allowedNetworks ...string) Middleware {
 	cpm := &CIDRProtectMiddleware{
 		allowedNetworks: make([]*net.IPNet, 0, len(allowedNetworks)),
 	}
