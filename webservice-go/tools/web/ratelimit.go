@@ -8,8 +8,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// ClientRateLimiterMiddleware
-type ClientRateLimiterMiddleware struct {
+type clientRateLimiterMiddleware struct {
 	sync.Mutex
 	limitersByClients  map[string]*clientLimiter
 	cleanInterval      time.Duration
@@ -23,13 +22,17 @@ type clientLimiter struct {
 	lastSeen time.Time
 }
 
-// NewClientRateLimiterMiddleware
-func NewClientRateLimiterMiddleware(rateLimit float64, burst int) Middleware {
-	m := &ClientRateLimiterMiddleware{
+// NewClientRateLimiterMiddleware creates a middleware that will allow clients to make
+// `rateLimitPerSeconds` requests per seconds. For each clients, the middleware creates
+// a "token bucket" limiter of size `burst` which is implemented in "golang.org/x/time/rate".
+// The middleware will cleanup the list of its clients every `cleanInterval` and remove
+// clients inactive for longer than `inactivityDuration`.
+func NewClientRateLimiterMiddleware(rateLimitPerSeconds float64, burst int) Middleware {
+	m := &clientRateLimiterMiddleware{
 		limitersByClients:  make(map[string]*clientLimiter),
 		cleanInterval:      1 * time.Minute,
 		inactivityDuration: 10 * time.Minute,
-		rateLimit:          rate.Limit(rateLimit),
+		rateLimit:          rate.Limit(rateLimitPerSeconds),
 		burst:              burst,
 	}
 	go func() { // periodic cleaning of the limitersbyclients every cleanInterval
@@ -47,7 +50,7 @@ func NewClientRateLimiterMiddleware(rateLimit float64, burst int) Middleware {
 	return m
 }
 
-func (m *ClientRateLimiterMiddleware) Handle(next http.Handler) http.Handler {
+func (m *clientRateLimiterMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip, err := GetRemoteAddr(r)
 		if err != nil {
