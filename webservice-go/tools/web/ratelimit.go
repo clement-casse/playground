@@ -36,14 +36,14 @@ type clientLimiter struct {
 	lastSeen time.Time
 }
 
-// RateLimiterMiddlewareOpt in an interface for applying RateLimiterMiddleware options.
-type RateLimiterMiddlewareOpt interface {
+// RateLimiterOpt in an interface for applying RateLimiterMiddleware options.
+type RateLimiterOpt interface {
 	applyOpt(*clientRateLimiterMiddleware) *clientRateLimiterMiddleware
 }
 
-type rateLimiterMiddlewareOptFunc func(*clientRateLimiterMiddleware) *clientRateLimiterMiddleware
+type rateLimiterOptFunc func(*clientRateLimiterMiddleware) *clientRateLimiterMiddleware
 
-func (fn rateLimiterMiddlewareOptFunc) applyOpt(s *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
+func (fn rateLimiterOptFunc) applyOpt(s *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
 	return fn(s)
 }
 
@@ -52,7 +52,7 @@ func (fn rateLimiterMiddlewareOptFunc) applyOpt(s *clientRateLimiterMiddleware) 
 // a "token bucket" limiter of size `burst` which is implemented in "golang.org/x/time/rate".
 // The middleware will cleanup the list of its clients every `cleanInterval` and remove
 // clients inactive for longer than `inactivityDuration`.
-func NewClientRateLimiterMiddleware(rateLimitPerSeconds float64, burst int, opts ...RateLimiterMiddlewareOpt) Middleware {
+func NewClientRateLimiterMiddleware(rateLimitPerSeconds float64, burst int, opts ...RateLimiterOpt) Middleware {
 	m := &clientRateLimiterMiddleware{
 		limitersByClients:  make(map[string]*clientLimiter),
 		cleanInterval:      defaultCleanInterval,
@@ -83,8 +83,8 @@ func NewClientRateLimiterMiddleware(rateLimitPerSeconds float64, burst int, opts
 
 // WithCleanInterval configure a NewRateLimiterMiddleware by setting the cleaning
 // interval to the specified value (by default to 1 minute).
-func WithCleanInterval(d time.Duration) RateLimiterMiddlewareOpt {
-	return rateLimiterMiddlewareOptFunc(func(m *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
+func WithCleanInterval(d time.Duration) RateLimiterOpt {
+	return rateLimiterOptFunc(func(m *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
 		m.cleanInterval = d
 		return m
 	})
@@ -92,8 +92,8 @@ func WithCleanInterval(d time.Duration) RateLimiterMiddlewareOpt {
 
 // WithInactivityDuration configures a NewRateLimiterMiddleware by setting the
 // client inactivity duration to the desired value (by default to 5 minutes).
-func WithInactivityDuration(d time.Duration) RateLimiterMiddlewareOpt {
-	return rateLimiterMiddlewareOptFunc(func(m *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
+func WithInactivityDuration(d time.Duration) RateLimiterOpt {
+	return rateLimiterOptFunc(func(m *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
 		m.inactivityDuration = d
 		return m
 	})
