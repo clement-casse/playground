@@ -124,6 +124,11 @@ func TestCIDRProtectMiddleware(t *testing.T) {
 			allowedNetworks: []string{"fc00::/7"},
 			remoteAddr:      "[2a01::abcd]:21345",
 			expectStatus:    http.StatusUnauthorized,
+		}, {
+			name:            "triggering an error in GetRemoteAddr",
+			allowedNetworks: []string{"fc00::/7"},
+			remoteAddr:      "[2a01::abcdef]:21345",
+			expectStatus:    http.StatusInternalServerError,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
