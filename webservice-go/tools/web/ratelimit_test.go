@@ -15,6 +15,20 @@ var (
 	numberOfRequestRegainedEverySeconds = 5.0
 )
 
+func TestWithCleanInterval(t *testing.T) {
+	interval, err := time.ParseDuration("42s")
+	assert.NoError(t, err)
+	m := NewClientRateLimiterMiddleware(1.0, 1, WithCleanInterval(interval))
+	assert.Equal(t, interval, m.(*clientRateLimiterMiddleware).cleanInterval)
+}
+
+func TestWithInactivityDuration(t *testing.T) {
+	duration, err := time.ParseDuration("42s")
+	assert.NoError(t, err)
+	m := NewClientRateLimiterMiddleware(1.0, 1, WithInactivityDuration(duration))
+	assert.Equal(t, duration, m.(*clientRateLimiterMiddleware).inactivityDuration)
+}
+
 func TestRateLimitMiddleware(t *testing.T) {
 	crlm := NewClientRateLimiterMiddleware(numberOfRequestRegainedEverySeconds, maxNumberOfRequests)
 	testServer := httptest.NewServer(crlm.Handle(testingHandler))

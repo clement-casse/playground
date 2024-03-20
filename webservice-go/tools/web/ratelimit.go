@@ -15,19 +15,20 @@ const (
 	HeaderRateLimitLimit     = "X-RateLimit-Limit"
 	HeaderRateLimitRemaining = "X-RateLimit-Remaining"
 
-	// HeaderRetryAfter is the header used to indicate when a client should retry
-	// requests (when the rate limit expires), in UTC time.
-	HeaderRetryAfter = "Retry-After"
+	defaultCleanInterval      = 1 * time.Minute
+	defaultInactivityDuration = 5 * time.Minute
 )
 
 type clientRateLimiterMiddleware struct {
 	sync.Mutex
-	limitersByClients  map[string]*clientLimiter
-	cleanInterval      time.Duration
-	inactivityDuration time.Duration
+	limitersByClients map[string]*clientLimiter
+
 	rateLimit          float64
 	burst              int
-	limitHeader        string
+	cleanInterval      time.Duration
+	inactivityDuration time.Duration
+
+	limitHeader string
 }
 
 type clientLimiter struct {
@@ -35,23 +36,37 @@ type clientLimiter struct {
 	lastSeen time.Time
 }
 
+// RateLimiterMiddlewareOpt in an interface for applying RateLimiterMiddleware options.
+type RateLimiterMiddlewareOpt interface {
+	applyOpt(*clientRateLimiterMiddleware) *clientRateLimiterMiddleware
+}
+
+type rateLimiterMiddlewareOptFunc func(*clientRateLimiterMiddleware) *clientRateLimiterMiddleware
+
+func (fn rateLimiterMiddlewareOptFunc) applyOpt(s *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
+	return fn(s)
+}
+
 // NewClientRateLimiterMiddleware creates a middleware that will allow clients to make
 // `rateLimitPerSeconds` requests per seconds. For each clients, the middleware creates
 // a "token bucket" limiter of size `burst` which is implemented in "golang.org/x/time/rate".
 // The middleware will cleanup the list of its clients every `cleanInterval` and remove
 // clients inactive for longer than `inactivityDuration`.
-func NewClientRateLimiterMiddleware(rateLimitPerSeconds float64, burst int) Middleware {
+func NewClientRateLimiterMiddleware(rateLimitPerSeconds float64, burst int, opts ...RateLimiterMiddlewareOpt) Middleware {
 	m := &clientRateLimiterMiddleware{
 		limitersByClients:  make(map[string]*clientLimiter),
-		cleanInterval:      1 * time.Minute,
-		inactivityDuration: 10 * time.Minute,
+		cleanInterval:      defaultCleanInterval,
+		inactivityDuration: defaultInactivityDuration,
 		rateLimit:          rateLimitPerSeconds,
 		burst:              burst,
 
 		// cache the computation of the limit header as a string as the value won't change
 		limitHeader: strconv.FormatInt(int64(burst), 10),
 	}
-	go func() { // periodic cleaning of the limitersbyclients every cleanInterval
+	for _, opt := range opts {
+		m = opt.applyOpt(m)
+	}
+	go func() { // periodic cleaning of the limitersByClients every cleanInterval
 		for {
 			time.Sleep(m.cleanInterval)
 			m.Lock()
@@ -64,6 +79,24 @@ func NewClientRateLimiterMiddleware(rateLimitPerSeconds float64, burst int) Midd
 		}
 	}()
 	return m
+}
+
+// WithCleanInterval configure a NewRateLimiterMiddleware by setting the cleaning
+// interval to the specified value (by default to 1 minute).
+func WithCleanInterval(d time.Duration) RateLimiterMiddlewareOpt {
+	return rateLimiterMiddlewareOptFunc(func(m *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
+		m.cleanInterval = d
+		return m
+	})
+}
+
+// WithInactivityDuration configures a NewRateLimiterMiddleware by setting the
+// client inactivity duration to the desired value (by default to 5 minutes).
+func WithInactivityDuration(d time.Duration) RateLimiterMiddlewareOpt {
+	return rateLimiterMiddlewareOptFunc(func(m *clientRateLimiterMiddleware) *clientRateLimiterMiddleware {
+		m.inactivityDuration = d
+		return m
+	})
 }
 
 func (m *clientRateLimiterMiddleware) Handle(next http.Handler) http.Handler {
