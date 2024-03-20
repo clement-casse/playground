@@ -13,8 +13,6 @@ var authHeaderRegex = regexp.MustCompile(`[^\s]+\s[^\s]`)
 
 // JWTAuthMiddleware verifies that the requests addressed to the inner handler are signed with JWT
 type JWTAuthMiddleware struct {
-	handler http.Handler
-
 	parser    *jwt.Parser
 	secretKey []byte
 }
@@ -22,14 +20,12 @@ type JWTAuthMiddleware struct {
 // NewJWTAuthMiddleware creates a JWTAuthMiddleware with the giver secret key used to check requests signature
 func NewJWTAuthMiddleware(secretKey []byte) Middleware {
 	return &JWTAuthMiddleware{
-		handler:   nil,
 		parser:    jwt.NewParser(),
 		secretKey: secretKey,
 	}
 }
 
-func (jm *JWTAuthMiddleware) Handle(handler http.Handler) http.Handler {
-	jm.handler = handler
+func (jm *JWTAuthMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bearerToken := r.Header.Get("Authorization")
 		if bearerToken == "" {
@@ -58,6 +54,6 @@ func (jm *JWTAuthMiddleware) Handle(handler http.Handler) http.Handler {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
-		jm.handler.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	})
 }
