@@ -96,7 +96,7 @@ func TestHandleErrors(t *testing.T) {
 			resp := w.Result()
 			assert.Equal(t, tt.expectStatus, resp.StatusCode, "unexpected status")
 			body, err := io.ReadAll(resp.Body)
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.expectBody, string(body))
 
 			logLines := recorder.String()
@@ -138,19 +138,19 @@ func TestRegisterRoute(t *testing.T) {
 			defer testServer.Close()
 
 			resOK, err := http.Get(testServer.URL + "/")
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, resOK.StatusCode)
 			bodyOK, err := io.ReadAll(resOK.Body)
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, `{"test": "ok"}`, string(bodyOK))
 			assert.True(t, resOK.Header.Get("Content-Type") == "application/json")
 
 			resNotFound, err := http.Get(testServer.URL + "/notfound")
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, http.StatusNotFound, resNotFound.StatusCode)
 
 			resInternalError, err := http.Get(testServer.URL + "/wilderror")
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, http.StatusInternalServerError, resInternalError.StatusCode)
 
 			if tt.expectedErrorLogLines != 0 {
@@ -178,7 +178,7 @@ func TestRegisterRouteWithMiddlewares(t *testing.T) {
 	defer testServer.Close()
 
 	resUnauthorized, err := http.Get(testServer.URL + "/")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusUnauthorized, resUnauthorized.StatusCode)
 
 	// Testing a flow with JWT Signature
@@ -188,12 +188,12 @@ func TestRegisterRouteWithMiddlewares(t *testing.T) {
 	}
 	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, validClaims)
 	signedToken, err := validToken.SignedString(secretKey)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodGet, testServer.URL, nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	req.Header.Set("Authorization", "Bearer "+signedToken)
 	res, err := http.DefaultClient.Do(req)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 }

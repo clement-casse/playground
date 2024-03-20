@@ -7,19 +7,19 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata/metricdatatest"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
-	"gotest.tools/assert"
 )
 
 func TestMetricsWithAttributes(t *testing.T) {
 	ctx := context.Background()
 	mReader := metric.NewManualReader()
 	defer func() {
-		assert.NilError(t, mReader.Shutdown(ctx))
+		assert.NoError(t, mReader.Shutdown(ctx))
 	}()
 	testProvider := metric.NewMeterProvider(metric.WithReader(mReader))
 	testMeter := testProvider.Meter("test-meter")
@@ -29,7 +29,7 @@ func TestMetricsWithAttributes(t *testing.T) {
 	defer testServer.Close()
 
 	_, err := http.Get(testServer.URL)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	testRequestTelemetryAttr := attribute.NewSet(
 		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.HTTPResponseStatusCode(http.StatusOK),
@@ -38,7 +38,7 @@ func TestMetricsWithAttributes(t *testing.T) {
 
 	var rmData metricdata.ResourceMetrics
 	err = mReader.Collect(ctx, &rmData)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 
 	for _, mData := range rmData.ScopeMetrics {
 		expectedMetricData := map[string]metricdata.Aggregation{
@@ -84,7 +84,7 @@ func TestMetricsPatternOverride(t *testing.T) {
 	ctx := context.Background()
 	mReader := metric.NewManualReader()
 	defer func() {
-		assert.NilError(t, mReader.Shutdown(ctx))
+		assert.NoError(t, mReader.Shutdown(ctx))
 	}()
 	testProvider := metric.NewMeterProvider(metric.WithReader(mReader))
 	testMeter := testProvider.Meter("test-meter")
@@ -95,14 +95,14 @@ func TestMetricsPatternOverride(t *testing.T) {
 	defer testServer.Close()
 
 	_, err := http.Get(testServer.URL)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	testRequestTelemetryAttr := []attribute.KeyValue{
 		semconv.HTTPRouteKey.String(pattern),
 	}
 
 	var rmData metricdata.ResourceMetrics
 	err = mReader.Collect(ctx, &rmData)
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 
 	for _, mData := range rmData.ScopeMetrics {
 		metricdatatest.AssertHasAttributes(t, mData, testRequestTelemetryAttr...)

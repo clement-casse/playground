@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -21,7 +20,7 @@ var (
 func TestServerConfig(t *testing.T) {
 	// After creating a new server instance none of the pointer should be nil to avoid runtime NPE
 	newInstance1 := NewServer(testListeningAddr, testHTTPHandler)
-	assert.Assert(t, newInstance1.logger != nil && newInstance1.server != nil)
+	assert.True(t, newInstance1.logger != nil && newInstance1.server != nil)
 
 	notTheDefaultLogger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	newInstance2 := NewServer(testListeningAddr, testHTTPHandler, WithLogger(notTheDefaultLogger))
@@ -29,27 +28,27 @@ func TestServerConfig(t *testing.T) {
 
 	// Setting the logger to nil should instantiate a default logger instead
 	newInstance3 := NewServer(testListeningAddr, testHTTPHandler, WithLogger(nil))
-	assert.Assert(t, newInstance3.logger != nil, "it is possible to set the instance logger to nil")
+	assert.True(t, newInstance3.logger != nil, "it is possible to set the instance logger to nil")
 	assert.Equal(t, slog.Default(), newInstance3.logger, "the nil logger does not fallback to slog default logger")
 }
 
 func TestWithReadTimeout(t *testing.T) {
 	timeout, err := time.ParseDuration("42s")
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	rc := NewServer("", testHTTPHandler, WithReadTimeout(timeout))
 	assert.Equal(t, timeout, rc.server.ReadTimeout)
 }
 
 func TestWithWriteTimeout(t *testing.T) {
 	timeout, err := time.ParseDuration("42s")
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	rc := NewServer("", testHTTPHandler, WithWriteTimeout(timeout))
 	assert.Equal(t, timeout, rc.server.WriteTimeout)
 }
 
 func TestWithIdleTimeout(t *testing.T) {
 	timeout, err := time.ParseDuration("42s")
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	rc := NewServer("", testHTTPHandler, WithIdleTimeout(timeout))
 	assert.Equal(t, timeout, rc.server.IdleTimeout)
 }
@@ -80,10 +79,10 @@ func TestBaseHandler(t *testing.T) {
 
 			resp := w.Result()
 			body, err := io.ReadAll(resp.Body)
-			assert.NilError(t, err)
+			assert.NoError(t, err)
 
 			assert.Equal(t, tt.expectedStatus, resp.StatusCode)
-			assert.Assert(t, strings.Contains(string(body), tt.expectedBody))
+			assert.Contains(t, string(body), tt.expectedBody)
 		})
 	}
 }
@@ -120,7 +119,7 @@ func TestWithMiddleware(t *testing.T) {
 	testMux.HandleFunc("GET /testing", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Add("X-Testing", "No middlewares")
 		_, err := w.Write([]byte("Test Body"))
-		assert.NilError(t, err)
+		assert.NoError(t, err)
 	})
 
 	testMiddleware1 := &testMiddleware{testMiddlewareFunc1}
@@ -159,7 +158,7 @@ func TestWithMiddleware(t *testing.T) {
 
 			resp := w.Result()
 			body, err := io.ReadAll(resp.Body)
-			assert.NilError(t, err)
+			assert.NoError(t, err)
 
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.Equal(t, tt.expectBody, string(body))

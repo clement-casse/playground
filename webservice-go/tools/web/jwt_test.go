@@ -28,13 +28,13 @@ var (
 
 func TestJWTVerification(t *testing.T) {
 	validSignedString, err := validToken.SignedString(secretKey)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	invalidSiggnedString, err := validToken.SignedString([]byte("invalid-secret"))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	expiredSignedString, err := expiredToken.SignedString(secretKey)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	for _, tt := range []struct {
 		name         string
@@ -72,13 +72,13 @@ func TestJWTVerification(t *testing.T) {
 			testServer := httptest.NewServer(jm.Handle(testingHandler))
 			defer testServer.Close()
 			req, err := http.NewRequest(http.MethodGet, testServer.URL, nil)
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			for rhKey, rhValue := range tt.reqHeaders {
 				req.Header.Set(rhKey, rhValue)
 			}
 
 			res, err := http.DefaultClient.Do(req)
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.expectStatus, res.StatusCode)
 		})
 	}
