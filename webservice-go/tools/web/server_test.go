@@ -92,8 +92,8 @@ type testMiddleware struct {
 	middlewareFunc func(http.Handler) http.Handler
 }
 
-func (tm *testMiddleware) Handle(h http.Handler) http.Handler {
-	return tm.middlewareFunc(h)
+func (tm *testMiddleware) Handle(next http.Handler) http.Handler {
+	return tm.middlewareFunc(next)
 }
 
 var (
