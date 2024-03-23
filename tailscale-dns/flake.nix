@@ -16,9 +16,6 @@
         # fly.io tool
         flyctl
 
-        # pulumi tool
-        pulumi-bin
-
         # Go and Tools
         go_1_22
         golangci-lint
