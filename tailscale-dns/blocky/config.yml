@@ -1,0 +1,43 @@
+ports:
+  dns: 53
+  http: 4000
+  https: 443
+
+clientLookup:
+  upstream:
+    - 100.100.100.100
+
+upstreams:
+  init: 
+    strategy: failOnError
+  groups:
+    default:
+      - https://www.jabber-germany.de/dns-query
+      - 217.160.70.42
+      - 185.181.61.24
+      - 178.254.22.166
+      - 81.169.136.222
+
+blocking:
+  blackLists:
+    # cf: https://firebog.net/
+    ads:
+      - https://www.github.developerdan.com/hosts/lists/ads-and-tracking-extended.txt
+      - https://adaway.org/hosts.txt
+
+    tracking:
+      - https://www.github.developerdan.com/hosts/lists/facebook-extended.txt
+      - https://www.github.developerdan.com/hosts/lists/amp-hosts-extended.txt
+
+    malicious:
+      - https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt
+
+  clientGroupsBlock:
+    default:
+      - ads
+      - tracking
+      - malicious
+
+prometheus:
+  enable: true
+  path: /metrics
