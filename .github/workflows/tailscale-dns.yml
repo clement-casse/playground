@@ -1,0 +1,35 @@
+name: "Tailscale DNS"
+on:
+  pull_request:
+    paths:
+      - "tailscale-dns/**/*.go"
+      - "tailscale-dns/go.*"
+  push:
+    branches:
+      - 'main'
+    paths:
+      - "tailscale-dns/**"
+
+env:
+  GO_VERSION: "~1.22"
+
+defaults:
+  run:
+    working-directory: tailscale-dns
+
+jobs:
+  Validate-Go:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+          cache-dependency-path: "tailscale-dns/go.sum"
+      - name: Go Vet
+        run: go vet -json ./...
+      - name: Go fmt
+        run: test -z $(go fmt ./...)
