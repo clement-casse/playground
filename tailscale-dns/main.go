@@ -1,3 +1,8 @@
+//go:build linux
+
+// Command that bootstraps the github.com/0xERR0R/blocky dns server by also starting
+// tailscale and authenticating to it with the auth_key provided in the environment
+// variable TAILSCALE_AUTHKEY.
 package main
 
 import (
@@ -8,6 +13,7 @@ import (
 	"path"
 	"time"
 
+	blockycmd "github.com/0xERR0R/blocky/cmd"
 	"golang.org/x/sync/errgroup"
 	tailscalecli "tailscale.com/cmd/tailscale/cli"
 )
@@ -55,25 +61,9 @@ func main() {
 	})
 
 	g.Go(func() error {
-		blocky := exec.CommandContext(
-			ctx,
-			"/app/blocky",
-			"--config=./config.yml",
-		)
-		blocky.Stdout = os.Stdout
-		blocky.Stderr = os.Stderr
-		return blocky.Run()
-	})
-
-	g.Go(func() error {
-		ticker := time.NewTicker(10 * time.Minute)
-		for {
-			<-ticker.C
-			blockyRefresh := exec.CommandContext(ctx, "/app/blocky", "refresh")
-			if err := blockyRefresh.Run(); err != nil {
-				return err
-			}
-		}
+		// include blocky as a part of the program
+		blocky := blockycmd.NewRootCommand()
+		return blocky.Execute()
 	})
 
 	if err := g.Wait(); err != nil {

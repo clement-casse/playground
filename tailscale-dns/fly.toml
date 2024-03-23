@@ -3,7 +3,6 @@ app = 'blocky-chihuahua-galaxy'
 primary_region = 'cdg'
 kill_signal = "SIGINT"
 kill_timeout = 5
-processes = []
 
 [build]
   dockerfile = "Dockerfile"
@@ -18,7 +17,6 @@ processes = []
 [[services]]
   auto_start_machines = false
   auto_stop_machines = false
-  min_machines_running = 1
   [[services.ports]]
     handlers = ["tls", "http"]
     port = "443"

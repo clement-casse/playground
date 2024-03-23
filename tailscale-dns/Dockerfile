@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=$GOPKG/pkg \
     CGO_ENABLED=0 GOOS=linux \
     go build -v -o /usr/local/bin/entrypoint .
 
-
+###############################
 FROM alpine:latest
 
 RUN apk update \
@@ -28,13 +28,6 @@ COPY --from=docker.io/tailscale/tailscale:stable \
      --chmod=700 \
      /usr/local/bin/tailscaled /app/tailscaled
 
-# Copy blocky binary from its own image on Docker Hub.
-COPY --from=docker.io/spx01/blocky:latest \
-     --chown=nobody:nobody \
-     --chmod=700 \
-     /app/blocky /app/blocky
-
-
 COPY --from=builder \
      --chown=nobody:nobody \
      --chmod=700 \
@@ -42,7 +35,9 @@ COPY --from=builder \
 
 COPY --chown=nobody:nobody \
      --chmod=400 \
-     ./blocky/config.yml config.yml
+     ./blocky-config.yml config.yml
+
+ENV BLOCKY_CONFIG_FILE="/app/blocky-config.yml"
 
 EXPOSE 53 443 4000
 

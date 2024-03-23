@@ -4,8 +4,7 @@ ports:
   https: 443
 
 clientLookup:
-  upstream:
-    - 100.100.100.100
+  upstream: 100.100.100.100
 
 upstreams:
   init: 
@@ -19,8 +18,11 @@ upstreams:
       - 81.169.136.222
 
 blocking:
+  loading:
+    refreshPeriod: 4h
+    downloads:
+      timeout: 60s
   blackLists:
-    # cf: https://firebog.net/
     ads:
       - https://www.github.developerdan.com/hosts/lists/ads-and-tracking-extended.txt
       - https://adaway.org/hosts.txt
