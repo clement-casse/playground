@@ -18,7 +18,7 @@
         # Specify the version of Go for all derivétion that will use go later on.
         overlays = [
           (final: prev: {
-            go = prev.go_1_20;
+            go = prev.go_1_21;
           })
         ];
 
@@ -40,18 +40,17 @@
 
           # OpenTelemetry Tools for generating a custom collector (Defined in custom derivations later)
           ocb # Generate and build the code of the custom collector
-          mdatagen # Generate code for internal/metadata module in each custom modules
         ];
 
         # Referencing the source repository of `opentelemetry-collector` and `opentelemetry-collector-contrib`
         # to build custom tools for collector modules development.
-        otelcolVersion = "0.93.0";
+        otelcolVersion = "0.96.0";
         otelcolSource = pkgs.fetchFromGitHub
           {
             owner = "open-telemetry";
             repo = "opentelemetry-collector";
             rev = "v${otelcolVersion}";
-            sha256 = "sha256-caDBVB1ChAAU5fGip8HbC4hXcTomsRoLIobtMSvX/HY=";
+            sha256 = "sha256-/QGRxQRkVXuP3H6AWSqc1U7sA1n0jTNYLa+gQA25Q5M=";
           };
 
         # Define OpenTelemetry Collector Builder Binary: It does not exist in the nixpkgs repo.
@@ -60,7 +59,7 @@
           pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
           version = otelcolVersion;
           src = otelcolSource + "/cmd/builder";
-          vendorHash = "sha256-nASmx+z2V2QgHCo1Wi+4Lf5lBev8Nk9bHwfkLib/5UY=";
+          vendorHash = "sha256-lhAV9pJW9UJOJ/BRjM8j57N4W4THbgPb4ZISvj9J+fk=";
 
           # Tune Build Process
           CGO_ENABLED = 0;
@@ -78,21 +77,6 @@
           installCheckPhase = ''
             $out/bin/builder version
           '';
-        };
-
-        # Define OpenTelemetry Collector mdatagen binary: it is a binary part of the `opentelemetry-collector`
-        # repo to generate the `internal/metadata` package in each custom package.
-        mdatagen = pkgs.buildGoModule {
-          pname = "mdatagen";
-          version = otelcolVersion;
-          src = otelcolSource;
-          sourceRoot = "source/cmd/mdatagen";
-          vendorHash = "sha256-CLC+byCW38gAQJK8iEilWg9sIbMlxn5Z6OgU3+hLV28=";
-          allowGoReference = false;
-
-          CGO_ENABLED = 0;
-          doCheck = false;
-          doInstallCheck = false;
         };
       in
       with pkgs;
