@@ -1,17 +1,24 @@
+# Specific to the workspace layout: Direnv hidden files
+/**/.direnv/
+# Specific to the workspace layout: Secrets files holding env vars sourced sources by direnv
+/**/*.secrets
+
+# Nix build outputs:
+/**/result
+# Rust build outputs:
+/**/target
+# Node dependencies:
+/**/node_modules
+
 # IDEs and dev tools
 /.idea/
 /.vscode/
 /.fleet/
-/**/.direnv/
-
-**/.DS_Store
-
-/**/target
-/**/result
-/**/node_modules
 
 # Jekyll specific exclusions
 _site
 .sass-cache
 .jekyll-cache
 .jekyll-metadata
+
+**/.DS_Store
