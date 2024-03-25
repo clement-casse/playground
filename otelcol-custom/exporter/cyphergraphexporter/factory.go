@@ -2,9 +2,9 @@ package cyphergraphexporter // import "github.com/clement-casse/playground/otelc
 
 import (
 	"context"
-	"fmt"
 
 	"go.opentelemetry.io/collector/component"
+	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/exporter/exporterhelper"
 
@@ -14,7 +14,7 @@ import (
 const (
 	defaultUsername    = ""
 	defaultPassword    = ""
-	defaultDatabaseUri = "bolt://localhost:7687"
+	defaultDatabaseURI = "bolt://localhost:7687"
 )
 
 // NewFactory creates a factory for the CypherGraph exporter.
@@ -29,7 +29,7 @@ func createDefaultConfig() component.Config {
 	return &Config{
 		Username:    defaultUsername,
 		Password:    defaultPassword,
-		DatabaseUri: defaultDatabaseUri,
+		DatabaseURI: defaultDatabaseURI,
 	}
 }
 
@@ -39,14 +39,14 @@ func createTracesExporter(
 	cfg component.Config,
 ) (exporter.Traces, error) {
 	config := cfg.(*Config)
-	exp, err := newTracesExporter(*config, settings)
+	exp, err := newTracesExporter(config, settings)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create TraceExporter: %s", err)
+		return nil, err
 	}
-	return exporterhelper.NewTracesExporter(
-		ctx,
-		settings,
-		config,
+	return exporterhelper.NewTracesExporter(ctx, settings, config,
 		exp.tracesPusher,
+		exporterhelper.WithCapabilities(consumer.Capabilities{MutatesData: false}),
+		exporterhelper.WithStart(exp.Start),
+		exporterhelper.WithShutdown(exp.Shutdown),
 	)
 }

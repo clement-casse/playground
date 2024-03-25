@@ -16,10 +16,16 @@ type cyphergraphTraceExporter struct {
 	logger *zap.Logger
 }
 
-func newTracesExporter(config Config, settings exporter.CreateSettings) (*cyphergraphTraceExporter, error) {
+func newTracesExporter(config *Config, settings exporter.CreateSettings) (*cyphergraphTraceExporter, error) {
+	if err := config.Validate(); err != nil {
+		return nil, err
+	}
 	driver, err := neo4j.NewDriverWithContext(
-		config.DatabaseUri,
+		config.DatabaseURI,
 		neo4j.BasicAuth(config.Username, string(config.Password), ""),
+		withLogger(settings.Logger),
+		withUserAgent(config.UserAgent),
+		withBackOffConfig(&config.BackOffConfig),
 	)
 	if err != nil {
 		return nil, err
@@ -30,23 +36,24 @@ func newTracesExporter(config Config, settings exporter.CreateSettings) (*cypher
 	}, nil
 }
 
-func (e *cyphergraphTraceExporter) Start(ctx context.Context, h component.Host) error {
+func (e *cyphergraphTraceExporter) Start(ctx context.Context, _ component.Host) error {
 	err := e.driver.VerifyConnectivity(ctx)
 	if err != nil {
 		return err
 	}
-	//initialize the indices
+	// TODO think about initializing database indices here.
 	return nil
 }
 
 func (e *cyphergraphTraceExporter) Shutdown(ctx context.Context) error {
-	if e.driver != nil {
-		return e.driver.Close(ctx)
+	if e.driver == nil {
+		return nil
 	}
-	return nil
+	return e.driver.Close(ctx)
 }
 
 func (e *cyphergraphTraceExporter) tracesPusher(ctx context.Context, td ptrace.Traces) error {
 	// TODO implement
+	_, _ = ctx, td
 	return fmt.Errorf("not implemented")
 }

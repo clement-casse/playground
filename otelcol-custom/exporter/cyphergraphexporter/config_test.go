@@ -29,7 +29,7 @@ func TestLoadConfig(t *testing.T) {
 		}, {
 			id: component.NewIDWithName(metadata.Type, "customname"),
 			expected: &Config{
-				DatabaseUri: "bolt://neo4j-host:7687",
+				DatabaseURI: "bolt://neo4j-host:7687",
 				Username:    "neo4j",
 				Password:    configopaque.String("password"),
 			},
