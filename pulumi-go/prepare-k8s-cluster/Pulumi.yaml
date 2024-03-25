@@ -1,3 +1,0 @@
-name: prepare-k8s-cluster
-runtime: go
-description: Install required Kubernestes resources and operator to run the application.
