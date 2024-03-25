@@ -44,3 +44,29 @@ jobs:
           version: latest
           skip-pkg-cache: true
           working-directory: otelcol-custom
+
+  Test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - exporter/cyphergraphexporter
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+          cache-dependency-path: "otelcol-custom/go.sum"
+      - name: Go Test Coverage
+        run: |
+          go test -failfast -race -covermode=atomic -coverprofile=${{ matrix.module }}/coverage.out ./${{ matrix.module }}/...
+          sed -i '/_gen.go:/d' coverage.out
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.1.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: otelcol-custom/${{ matrix.module }}/coverage.out
+          flags: otelcol-custom,${{ matrix.module }}
