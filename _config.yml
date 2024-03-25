@@ -44,12 +44,11 @@ exclude:
   - "**/dist"
   - "**/.idea"
   - "**/.vscode"
-  - go-spa
   - i-hate-latex
   - kotlin-jetbrains-webapp
   - otelcol-custom
-  - pulumi-go
   - shuttle-rust
+  - webservice-go
 
 author:
   name: *whoami
