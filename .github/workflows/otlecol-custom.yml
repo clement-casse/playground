@@ -59,10 +59,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
-          cache-dependency-path: "otelcol-custom/go.sum"
+          cache-dependency-path: "otelcol-custom/${{ matrix.module }}/go.sum"
       - name: Go Test Coverage
+        working-directory: otelcol-custom/${{ matrix.module }}
         run: |
-          go test -failfast -race -covermode=atomic -coverprofile=${{ matrix.module }}/coverage.out ./${{ matrix.module }}/...
+          go test -failfast -race -covermode=atomic -coverprofile=coverage.out ./...
           sed -i '/_gen.go:/d' coverage.out
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.1.0
