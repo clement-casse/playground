@@ -15,6 +15,8 @@ require (
 	go.uber.org/zap v1.27.0
 )
 
+require go.opentelemetry.io/collector/receiver v0.96.0 // indirect
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
