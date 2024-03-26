@@ -2,7 +2,7 @@ package cyphergraphexporter // import "github.com/clement-casse/playground/otelc
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"go.opentelemetry.io/collector/component"
@@ -63,7 +63,26 @@ func (e *cyphergraphTraceExporter) Shutdown(ctx context.Context) error {
 }
 
 func (e *cyphergraphTraceExporter) tracesPusher(ctx context.Context, td ptrace.Traces) error {
-	// TODO implement
-	_, _ = ctx, td
-	return fmt.Errorf("not implemented")
+	start := time.Now()
+	session := e.driver.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+
+	rSpans := td.ResourceSpans()
+	for i := 0; i < rSpans.Len(); i++ {
+		_, err := neo4j.ExecuteWrite(ctx, session, func(tx neo4j.ManagedTransaction) (any, error) {
+			resource := rSpans.At(i).Resource()
+			if err := mergeResource(ctx, tx, &resource); err != nil {
+				return nil, err
+			}
+
+			return nil, nil
+		})
+		if err != nil {
+			e.logger.Error("resources merge error", zap.Error(err))
+		}
+	}
+
+	duration := time.Since(start)
+	e.logger.Debug("traces inserted", zap.String("duration", duration.String()))
+	return nil
 }
