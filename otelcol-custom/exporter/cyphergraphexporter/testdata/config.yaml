@@ -1,5 +1,27 @@
 cyphergraph:
-cyphergraph/customname:
+cyphergraph/withnoauth:
+  db_uri: "bolt://neo4j-host:7687"
+cyphergraph/withbasicauth:
   db_uri: "bolt://neo4j-host:7687"
   username: "neo4j"
   password: "password"
+cyphergraph/withbearertoken:
+  db_uri: "bolt://neo4j-host:7687"
+  bearer_token: "somevalue"
+cyphergraph/withkerberosticket:
+  db_uri: "bolt://neo4j-host:7687"
+  kerberos_ticket: "somevalue"
+cyphergraph/withcustomua:
+  user_agent: "testUserAgent"
+cyphergraph/withbasicandbearer:
+  username: "neo4j"
+  password: "password"
+  bearer_token: "somevalue"
+cyphergraph/withabearerandkerb:
+  bearer_token: "somevalue"
+  kerberos_ticket: "somevalue"
+cyphergraph/withallauthmethods:
+  username: "neo4j"
+  password: "password"
+  bearer_token: "somevalue"
+  kerberos_ticket: "somevalue"

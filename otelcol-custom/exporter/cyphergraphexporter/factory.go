@@ -11,12 +11,6 @@ import (
 	"github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter/internal/metadata"
 )
 
-const (
-	defaultUsername    = ""
-	defaultPassword    = ""
-	defaultDatabaseURI = "bolt://localhost:7687"
-)
-
 // NewFactory creates a factory for the CypherGraph exporter.
 func NewFactory() exporter.Factory {
 	return exporter.NewFactory(
@@ -27,23 +21,18 @@ func NewFactory() exporter.Factory {
 
 func createDefaultConfig() component.Config {
 	return &Config{
-		Username:    defaultUsername,
-		Password:    defaultPassword,
 		DatabaseURI: defaultDatabaseURI,
+		UserAgent:   defaultUserAgent,
 	}
 }
 
-func createTracesExporter(
-	ctx context.Context,
-	settings exporter.CreateSettings,
-	cfg component.Config,
-) (exporter.Traces, error) {
-	config := cfg.(*Config)
-	exp, err := newTracesExporter(config, settings)
+func createTracesExporter(ctx context.Context, set exporter.CreateSettings, cCfg component.Config) (exporter.Traces, error) {
+	cfg := cCfg.(*Config)
+	exp, err := newTracesExporter(cfg, set)
 	if err != nil {
 		return nil, err
 	}
-	return exporterhelper.NewTracesExporter(ctx, settings, config,
+	return exporterhelper.NewTracesExporter(ctx, set, cfg,
 		exp.tracesPusher,
 		exporterhelper.WithCapabilities(consumer.Capabilities{MutatesData: false}),
 		exporterhelper.WithStart(exp.Start),

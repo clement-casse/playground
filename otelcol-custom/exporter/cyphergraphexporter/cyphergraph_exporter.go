@@ -16,23 +16,33 @@ type cyphergraphTraceExporter struct {
 	logger *zap.Logger
 }
 
-func newTracesExporter(config *Config, settings exporter.CreateSettings) (*cyphergraphTraceExporter, error) {
-	if err := config.Validate(); err != nil {
+func newTracesExporter(cfg *Config, set exporter.CreateSettings) (*cyphergraphTraceExporter, error) {
+	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
+	var neo4jAuth neo4j.AuthToken
+	if cfg.Username != "" {
+		neo4jAuth = neo4j.BasicAuth(cfg.Username, string(cfg.Password), "")
+	} else if t := string(cfg.BearerToken); t != "" {
+		neo4jAuth = neo4j.BearerAuth(t)
+	} else if t := string(cfg.KerberosTicket); t != "" {
+		neo4jAuth = neo4j.KerberosAuth(t)
+	} else {
+		neo4jAuth = neo4j.NoAuth()
+	}
 	driver, err := neo4j.NewDriverWithContext(
-		config.DatabaseURI,
-		neo4j.BasicAuth(config.Username, string(config.Password), ""),
-		withLogger(settings.Logger),
-		withUserAgent(config.UserAgent),
-		withBackOffConfig(&config.BackOffConfig),
+		cfg.DatabaseURI,
+		neo4jAuth,
+		withLogger(set.Logger),
+		withUserAgent(cfg.UserAgent),
+		withBackOffConfig(&cfg.BackOffConfig),
 	)
 	if err != nil {
 		return nil, err
 	}
 	return &cyphergraphTraceExporter{
 		driver: driver,
-		logger: settings.Logger,
+		logger: set.Logger,
 	}, nil
 }
 
