@@ -35,6 +35,8 @@
           go-tools
           golangci-lint
 
+          docker-client
+
           # Build Utilities
           yq-go # To inject Nix Attributes in the builder manifest
 

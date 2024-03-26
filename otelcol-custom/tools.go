@@ -8,6 +8,7 @@
 package otelcolcustom
 
 import (
+	_ "github.com/mikefarah/yq/v4"
 	_ "go.opentelemetry.io/collector/cmd/builder"
 	_ "go.opentelemetry.io/collector/cmd/mdatagen"
 

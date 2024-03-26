@@ -12,6 +12,7 @@ require (
 	go.opentelemetry.io/collector/consumer v0.96.0
 	go.opentelemetry.io/collector/exporter v0.96.0
 	go.opentelemetry.io/collector/pdata v1.3.0
+	go.uber.org/goleak v1.3.0
 	go.uber.org/zap v1.27.0
 )
 
