@@ -103,6 +103,13 @@ func TestLoadConfig(t *testing.T) {
 			configValidateAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorContains(t, err, errMultipleAuthMethod.Error())
 			},
+		}, {
+			id: component.NewIDWithName(metadata.Type, "badurl"),
+			expected: &Config{
+				DatabaseURI: "://abcdefghijklmno",
+				UserAgent:   defaultUserAgent,
+			},
+			configValidateAssert: assert.Error,
 		},
 	} {
 		t.Run(tt.id.String(), func(t *testing.T) {

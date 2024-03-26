@@ -25,3 +25,5 @@ cyphergraph/withallauthmethods:
   password: "password"
   bearer_token: "somevalue"
   kerberos_ticket: "somevalue"
+cyphergraph/badurl:
+  db_uri: "://abcdefghijklmno"
