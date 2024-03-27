@@ -31,83 +31,92 @@ func TestLoadConfig(t *testing.T) {
 		}, {
 			id: component.NewIDWithName(metadata.Type, "withnoauth"),
 			expected: &Config{
-				DatabaseURI: "bolt://neo4j-host:7687",
-				UserAgent:   defaultUserAgent,
+				DatabaseURI:     "bolt://neo4j-host:7687",
+				UserAgent:       defaultUserAgent,
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: assert.NoError,
 		}, {
 			id: component.NewIDWithName(metadata.Type, "withbasicauth"),
 			expected: &Config{
-				DatabaseURI: "bolt://neo4j-host:7687",
-				Username:    "neo4j",
-				Password:    configopaque.String("password"),
-				UserAgent:   defaultUserAgent,
+				DatabaseURI:     "bolt://neo4j-host:7687",
+				Username:        "neo4j",
+				Password:        configopaque.String("password"),
+				UserAgent:       defaultUserAgent,
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: assert.NoError,
 		}, {
 			id: component.NewIDWithName(metadata.Type, "withbearertoken"),
 			expected: &Config{
-				DatabaseURI: "bolt://neo4j-host:7687",
-				BearerToken: configopaque.String("somevalue"),
-				UserAgent:   defaultUserAgent,
+				DatabaseURI:     "bolt://neo4j-host:7687",
+				BearerToken:     configopaque.String("somevalue"),
+				UserAgent:       defaultUserAgent,
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: assert.NoError,
 		}, {
 			id: component.NewIDWithName(metadata.Type, "withkerberosticket"),
 			expected: &Config{
-				DatabaseURI:    "bolt://neo4j-host:7687",
-				KerberosTicket: configopaque.String("somevalue"),
-				UserAgent:      defaultUserAgent,
+				DatabaseURI:     "bolt://neo4j-host:7687",
+				KerberosTicket:  configopaque.String("somevalue"),
+				UserAgent:       defaultUserAgent,
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: assert.NoError,
 		}, {
 			id: component.NewIDWithName(metadata.Type, "withcustomua"),
 			expected: &Config{
-				DatabaseURI: defaultDatabaseURI,
-				UserAgent:   "testUserAgent",
+				DatabaseURI:     defaultDatabaseURI,
+				UserAgent:       "testUserAgent",
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: assert.NoError,
 		}, {
-			id: component.NewIDWithName(metadata.Type, "withbasicandbearer"),
+			id: component.NewIDWithName(metadata.Type, "ERRORwithbasicandbearer"),
 			expected: &Config{
-				DatabaseURI: defaultDatabaseURI,
-				UserAgent:   defaultUserAgent,
-				Username:    "neo4j",
-				Password:    configopaque.String("password"),
-				BearerToken: configopaque.String("somevalue"),
+				DatabaseURI:     defaultDatabaseURI,
+				UserAgent:       defaultUserAgent,
+				Username:        "neo4j",
+				Password:        configopaque.String("password"),
+				BearerToken:     configopaque.String("somevalue"),
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorContains(t, err, errMultipleAuthMethod.Error())
 			},
 		}, {
-			id: component.NewIDWithName(metadata.Type, "withabearerandkerb"),
+			id: component.NewIDWithName(metadata.Type, "ERRORwithabearerandkerb"),
 			expected: &Config{
-				DatabaseURI:    defaultDatabaseURI,
-				UserAgent:      defaultUserAgent,
-				BearerToken:    configopaque.String("somevalue"),
-				KerberosTicket: configopaque.String("somevalue"),
+				DatabaseURI:     defaultDatabaseURI,
+				UserAgent:       defaultUserAgent,
+				BearerToken:     configopaque.String("somevalue"),
+				KerberosTicket:  configopaque.String("somevalue"),
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorContains(t, err, errMultipleAuthMethod.Error())
 			},
 		}, {
-			id: component.NewIDWithName(metadata.Type, "withallauthmethods"),
+			id: component.NewIDWithName(metadata.Type, "ERRORwithallauthmethods"),
 			expected: &Config{
-				DatabaseURI:    defaultDatabaseURI,
-				UserAgent:      defaultUserAgent,
-				Username:       "neo4j",
-				Password:       configopaque.String("password"),
-				BearerToken:    configopaque.String("somevalue"),
-				KerberosTicket: configopaque.String("somevalue"),
+				DatabaseURI:     defaultDatabaseURI,
+				UserAgent:       defaultUserAgent,
+				Username:        "neo4j",
+				Password:        configopaque.String("password"),
+				BearerToken:     configopaque.String("somevalue"),
+				KerberosTicket:  configopaque.String("somevalue"),
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorContains(t, err, errMultipleAuthMethod.Error())
 			},
 		}, {
-			id: component.NewIDWithName(metadata.Type, "badurl"),
+			id: component.NewIDWithName(metadata.Type, "ERRORbadurl"),
 			expected: &Config{
-				DatabaseURI: "://abcdefghijklmno",
-				UserAgent:   defaultUserAgent,
+				DatabaseURI:     "://abcdefghijklmno",
+				UserAgent:       defaultUserAgent,
+				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: assert.Error,
 		},

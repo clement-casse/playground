@@ -21,8 +21,9 @@ func NewFactory() exporter.Factory {
 
 func createDefaultConfig() component.Config {
 	return &Config{
-		DatabaseURI: defaultDatabaseURI,
-		UserAgent:   defaultUserAgent,
+		DatabaseURI:     defaultDatabaseURI,
+		UserAgent:       defaultUserAgent,
+		ResourceMappers: defaultResourcesMappers,
 	}
 }
 

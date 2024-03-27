@@ -13,17 +13,17 @@ cyphergraph/withkerberosticket:
   kerberos_ticket: "somevalue"
 cyphergraph/withcustomua:
   user_agent: "testUserAgent"
-cyphergraph/withbasicandbearer:
+cyphergraph/ERRORwithbasicandbearer:
   username: "neo4j"
   password: "password"
   bearer_token: "somevalue"
-cyphergraph/withabearerandkerb:
+cyphergraph/ERRORwithabearerandkerb:
   bearer_token: "somevalue"
   kerberos_ticket: "somevalue"
-cyphergraph/withallauthmethods:
+cyphergraph/ERRORwithallauthmethods:
   username: "neo4j"
   password: "password"
   bearer_token: "somevalue"
   kerberos_ticket: "somevalue"
-cyphergraph/badurl:
+cyphergraph/ERRORbadurl:
   db_uri: "://abcdefghijklmno"

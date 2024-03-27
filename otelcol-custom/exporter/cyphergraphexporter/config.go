@@ -6,11 +6,50 @@ import (
 
 	"go.opentelemetry.io/collector/config/configopaque"
 	"go.opentelemetry.io/collector/config/configretry"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
 const (
 	defaultDatabaseURI = "bolt://localhost:7687"
 	defaultUserAgent   = "opentelemetrycollector.cyphergraphexporter"
+)
+
+var (
+	// defaultResourcesMappers provides a selection of ResourceMappers following the
+	// OpenTelemetry Resource Semantic [https://opentelemetry.io/docs/specs/semconv/resource/]
+	defaultResourcesMappers = map[string]ResourceMapper{
+		"service": {
+			LabelID:     string(semconv.ServiceNameKey),
+			OtherLabels: []string{string(semconv.ServiceVersionKey), string(semconv.ServiceInstanceIDKey), string(semconv.ServiceNamespaceKey)},
+		},
+		"container": {
+			LabelID:     string(semconv.ContainerIDKey),
+			OtherLabels: []string{string(semconv.ContainerNameKey)},
+		},
+		"container.image": {
+			LabelID:     string(semconv.ContainerImageIDKey),
+			OtherLabels: []string{string(semconv.ContainerImageNameKey)},
+		},
+		"host": {
+			LabelID:     string(semconv.HostIDKey),
+			OtherLabels: []string{string(semconv.HostNameKey), string(semconv.HostImageIDKey), string(semconv.HostImageNameKey), string(semconv.HostIPKey), string(semconv.HostTypeKey)},
+		},
+		"deployment": {
+			LabelID: string(semconv.DeploymentEnvironmentKey),
+		},
+		"k8s.cluster": {
+			LabelID:     string(semconv.K8SClusterUIDKey),
+			OtherLabels: []string{string(semconv.K8SClusterNameKey)},
+		},
+		"k8s.node": {
+			LabelID:     string(semconv.K8SNodeNameKey),
+			OtherLabels: []string{string(semconv.K8SNodeUIDKey)},
+		},
+		"k8s.pod": {
+			LabelID:     string(semconv.K8SPodUIDKey),
+			OtherLabels: []string{string(semconv.K8SPodNameKey)},
+		},
+	}
 )
 
 // Config defines configuration for the Cypher Graph exporter.
@@ -43,6 +82,35 @@ type Config struct {
 	// UserAgent corresponds to the value of the User-Agent field that is used in
 	// the "bolt" (websocket) connection.
 	UserAgent string `mapstructure:"user_agent,omitempty"`
+
+	// RessourceMappers allows to generate multiple nodes with different labels in the graph
+	// for a single [go.opentelemetry.io/collector/pdata/pcommon.Resource] based on its attributes.
+	// Graph node labels are provided as keys of the ResourceMappers field:
+	//   resources:
+	//     "k8s.pod":
+	//       label_id: "k8s.pod.uid"
+	//       other_labels: [ "k8s.pod.name" ]
+	//     "k8s.node":
+	//       label_id: "k8s.node.uid"
+	//       other_labels: [ "k8s.node.name" ]
+	// This configuration will generate for each spans processed by the receiver two different
+	// resource nodes: one with label 'k8s.node' and one with label 'k8s.pod'. Nodes with the same
+	// label sharing the same value of the attribute referenced in the 'label_id' field will be
+	// merged together. This configuration will only generate one node for each single pods more
+	// one for each single nodes in the kubernetes cluster.
+	ResourceMappers map[string]ResourceMapper `mapstructure:"resources,omitempty"`
+}
+
+// ResourceMapper describes how [go.opentelemetry.io/collector/pdata/pcommon.Resource] attributes
+// get parsed to create a node in the graph.
+type ResourceMapper struct {
+	// LabelID represents the attrribute Key of a resource whose value will be used as index for
+	// for a given resource node.
+	LabelID string `mapstructure:"label_id"`
+
+	// OtherLabels represents additionnal labels whose value will be added as additional properties
+	// for the nodes of the graph.
+	OtherLabels []string `mapstructure:"other_labels"`
 }
 
 var (
