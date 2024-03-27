@@ -19,6 +19,7 @@ In this git repository, each of the following directories correspond to one of t
 | [`shuttle-rust`](./shuttle-rust/)   | A Rust workspace for testing [shuttle.rs](https://www.shuttle.rs/). | Will continue later |
 | [`kotlin-jetbrains-webapp`](./kotlin-jetbrains-webapp/) | Putting my hands into Kotlin, Ktor & Exposed for the first time. | Pondering if I should continue |
 | [`otelcol-custom`](./otelcol-custom/) | Creation of a custom OpenTelemetry Collector and creation of custom modules. | Active |
+| [`tailscale-dns`](./tailscale-dns/) | Deployment of a [blocky](https://github.com/0xERR0R/blocky/) instance as a part of my Tailscale network. | Active |
 | [`webservice-go`](./webservice-go/) | A very conventional Web server in Go with some reusable components, I think ... | Active |
 
 These projects come along with a `flake.nix` file that describes the development environment for this project.
