@@ -12,13 +12,16 @@ import (
 )
 
 type cyphergraphTraceExporter struct {
-	driver neo4j.DriverWithContext
+	driver        neo4j.DriverWithContext
+	labelFromAttr map[string]string
+
 	logger *zap.Logger
 }
 
-func newTracesExporter(cfg *Config, set exporter.CreateSettings) (*cyphergraphTraceExporter, error) {
-	if err := cfg.Validate(); err != nil {
-		return nil, err
+func newTracesExporter(cfg *Config, set exporter.CreateSettings) (cte *cyphergraphTraceExporter, err error) {
+	cte = &cyphergraphTraceExporter{logger: set.Logger}
+	if err = cfg.Validate(); err != nil {
+		return
 	}
 	var neo4jAuth neo4j.AuthToken
 	if cfg.Username != "" {
@@ -30,7 +33,7 @@ func newTracesExporter(cfg *Config, set exporter.CreateSettings) (*cyphergraphTr
 	} else {
 		neo4jAuth = neo4j.NoAuth()
 	}
-	driver, err := neo4j.NewDriverWithContext(
+	cte.driver, err = neo4j.NewDriverWithContext(
 		cfg.DatabaseURI,
 		neo4jAuth,
 		withLogger(set.Logger),
@@ -38,12 +41,13 @@ func newTracesExporter(cfg *Config, set exporter.CreateSettings) (*cyphergraphTr
 		withBackOffConfig(&cfg.BackOffConfig),
 	)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return &cyphergraphTraceExporter{
-		driver: driver,
-		logger: set.Logger,
-	}, nil
+	cte.labelFromAttr = make(map[string]string, len(cfg.ResourceMappers))
+	for label, matcher := range cfg.ResourceMappers {
+		cte.labelFromAttr[matcher.LabelID] = label
+	}
+	return
 }
 
 func (e *cyphergraphTraceExporter) Start(ctx context.Context, _ component.Host) error {
@@ -69,17 +73,18 @@ func (e *cyphergraphTraceExporter) tracesPusher(ctx context.Context, td ptrace.T
 
 	rSpans := td.ResourceSpans()
 	for i := 0; i < rSpans.Len(); i++ {
-		_, err := neo4j.ExecuteWrite(ctx, session, func(tx neo4j.ManagedTransaction) (any, error) {
-			resource := rSpans.At(i).Resource()
-			if err := mergeResource(ctx, tx, &resource); err != nil {
-				return nil, err
-			}
+		e.logger.Sugar().Infof("span %d, Span: %+v", i, rSpans.At(i))
+		// _, err := neo4j.ExecuteWrite(ctx, session, func(tx neo4j.ManagedTransaction) (any, error) {
+		// 	resource := rSpans.At(i).Resource()
+		// 	if err := graphmodel.MergeResource(ctx, tx, &resource); err != nil {
+		// 		return nil, err
+		// 	}
 
-			return nil, nil
-		})
-		if err != nil {
-			e.logger.Error("resources merge error", zap.Error(err))
-		}
+		// 	return nil, nil
+		// })
+		// if err != nil {
+		// 	e.logger.Error("resources merge error", zap.Error(err))
+		// }
 	}
 
 	duration := time.Since(start)

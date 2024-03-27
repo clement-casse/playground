@@ -1,4 +1,4 @@
-package cyphergraphexporter
+package graphmodel
 
 import (
 	"context"
@@ -12,7 +12,7 @@ const (
 	cypherQueryNewResource = `MERGE (r:Resource {})`
 )
 
-func mergeResource(ctx context.Context, tx neo4j.ManagedTransaction, r *pcommon.Resource) error {
+func MergeResource(ctx context.Context, tx neo4j.ManagedTransaction, r *pcommon.Resource) error {
 	result, err := tx.Run(ctx, cypherQueryNewResource, r.Attributes().AsRaw())
 	if err != nil {
 		return err

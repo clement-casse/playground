@@ -6,7 +6,7 @@ volumes:
 services:
   telemetrygen:
     image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:latest
-    restart: never
+    restart: on-failure
     command: [
       "traces",
       "--otlp-insecure",
