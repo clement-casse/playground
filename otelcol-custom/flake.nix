@@ -35,6 +35,8 @@
           go-tools
           golangci-lint
 
+          docker-client
+
           # Build Utilities
           yq-go # To inject Nix Attributes in the builder manifest
 
@@ -44,13 +46,13 @@
 
         # Referencing the source repository of `opentelemetry-collector` and `opentelemetry-collector-contrib`
         # to build custom tools for collector modules development.
-        otelcolVersion = "0.96.0";
+        otelcolVersion = "0.97.0";
         otelcolSource = pkgs.fetchFromGitHub
           {
             owner = "open-telemetry";
             repo = "opentelemetry-collector";
             rev = "v${otelcolVersion}";
-            sha256 = "sha256-/QGRxQRkVXuP3H6AWSqc1U7sA1n0jTNYLa+gQA25Q5M=";
+            sha256 = "sha256-0zTEaSylZEU7mCCrMf9aV8V0MMD4Au4y0zacWSLcujg=";
           };
 
         # Define OpenTelemetry Collector Builder Binary: It does not exist in the nixpkgs repo.
@@ -59,7 +61,7 @@
           pname = "ocb"; # The Package is named `ocb` but buildGoModule installs it as `builder`
           version = otelcolVersion;
           src = otelcolSource + "/cmd/builder";
-          vendorHash = "sha256-lhAV9pJW9UJOJ/BRjM8j57N4W4THbgPb4ZISvj9J+fk=";
+          vendorHash = "sha256-QAtg9mB7+ltIOWzJJ7WIFXVZAWUhEnenwoixpx5b6Rc=";
 
           # Tune Build Process
           CGO_ENABLED = 0;
