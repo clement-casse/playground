@@ -25,6 +25,11 @@ defaults:
 jobs:
   Validate:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - .
+          - exporter/cyphergraphexporter
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -33,7 +38,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
-          cache-dependency-path: "otelcol-custom/go.sum"
+          cache-dependency-path: "otelcol-custom/${{ matrix.module }}/go.sum"
       - name: Go Vet
         run: go vet -json ./...
       - name: Go fmt
@@ -50,6 +55,7 @@ jobs:
     strategy:
       matrix:
         module:
+          - .
           - exporter/cyphergraphexporter
     steps:
       - name: Checkout Repo
