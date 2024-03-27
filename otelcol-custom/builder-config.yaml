@@ -17,4 +17,5 @@ exporters:
     path: ./exporter/cyphergraphexporter
 
 extensions:
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.96.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/basicauthextension v0.96.0
