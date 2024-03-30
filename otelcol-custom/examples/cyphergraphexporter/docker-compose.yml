@@ -2,6 +2,7 @@ version: '3.9'
 
 volumes:
   neo4jdata:
+  memgraphdata:
 
 services:
   telemetrygen:
@@ -45,7 +46,7 @@ services:
       - "7474:7474"
       - "7687:7687"
     environment:
-      - NEO4J_AUTH=none
+      - NEO4J_AUTH=neo4j/some_password
     volumes:
       - neo4jdata:/data
     healthcheck:
@@ -53,3 +54,25 @@ services:
       interval: 1s
       timeout: 3s
       retries: 30
+
+  memgraph:
+    image: memgraph/memgraph:latest
+    restart: unless-stopped
+    ports:
+      - "7444:7444"
+      - "7688:7688"
+    volumes:
+      - memgraphdata:/var/lib/memgraph
+    command: [
+      "--bolt-port=7688",
+      "--data-directory=/var/lib/memgraph",
+      "--telemetry-enabled=false",
+    ]
+
+  memegraph-lab:
+    image: memgraph/lab:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - memgraph
