@@ -9,6 +9,8 @@ import (
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
+
+	"github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter/internal/neo4jdriverwrap"
 )
 
 type cyphergraphTraceExporter struct {
@@ -36,9 +38,9 @@ func newTracesExporter(cfg *Config, set exporter.CreateSettings) (cte *cyphergra
 	cte.driver, err = neo4j.NewDriverWithContext(
 		cfg.DatabaseURI,
 		neo4jAuth,
-		withLogger(set.Logger),
-		withUserAgent(cfg.UserAgent),
-		withBackOffConfig(&cfg.BackOffConfig),
+		neo4jdriverwrap.WithLogger(set.Logger),
+		neo4jdriverwrap.WithUserAgent(cfg.UserAgent),
+		neo4jdriverwrap.WithBackOffConfig(&cfg.BackOffConfig),
 	)
 	if err != nil {
 		return
