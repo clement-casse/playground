@@ -9,14 +9,24 @@ import (
 
 const (
 	// language=cypher
-	cypherQueryNewResource = `MERGE (r:Resource {})`
+	cypherQueryNewResource = `MERGE (r:Resource {id: $id, type: $type})`
 )
 
-func MergeResource(ctx context.Context, tx neo4j.ManagedTransaction, r *pcommon.Resource) error {
-	result, err := tx.Run(ctx, cypherQueryNewResource, r.Attributes().AsRaw())
-	if err != nil {
-		return err
+func (e *Encoder) MergeResource(ctx context.Context, tx neo4j.ManagedTransaction, r *pcommon.Resource) error {
+	for attrKey, label := range e.resourceMap {
+		if attrValue, ok := r.Attributes().AsRaw()[attrKey]; ok {
+			result, err := tx.Run(ctx, cypherQueryNewResource, map[string]any{
+				"id":   attrValue,
+				"type": label,
+			})
+			if err != nil {
+				return err
+			}
+			_, err = result.Consume(ctx)
+			if err != nil {
+				return err
+			}
+		}
 	}
-	_, err = result.Consume(ctx)
-	return err
+	return nil
 }

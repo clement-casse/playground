@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/testcontainers/testcontainers-go"
@@ -82,6 +83,7 @@ func InitCypherDBTestContainer(ctx context.Context, engine string) (neo4j.Driver
 			panic(errDefer)
 		}
 	}
+	time.Sleep(500 * time.Millisecond) // a shame, but the wait.ForLog(`...`) seems a bit clunky and the initialization occasionnaly fails
 
 	return driver, closeFunc, nil
 }
