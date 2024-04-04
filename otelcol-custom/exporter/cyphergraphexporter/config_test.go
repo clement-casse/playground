@@ -13,6 +13,14 @@ import (
 	"github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter/internal/metadata"
 )
 
+func defaultRessourceMapperWith(extensions map[string]*ResourceMapper) map[string]*ResourceMapper {
+	rm := defaultResourcesMappers
+	for k, v := range extensions {
+		rm[k] = v
+	}
+	return rm
+}
+
 func TestLoadConfig(t *testing.T) {
 	t.Parallel()
 
@@ -119,6 +127,23 @@ func TestLoadConfig(t *testing.T) {
 				ResourceMappers: defaultResourcesMappers,
 			},
 			configValidateAssert: assert.Error,
+		}, {
+			id: component.NewIDWithName(metadata.Type, "withcustomresourcemapper"),
+			expected: &Config{
+				DatabaseURI: "bolt://neo4j-host:7687",
+				UserAgent:   defaultUserAgent,
+				ResourceMappers: defaultRessourceMapperWith(map[string]*ResourceMapper{
+					"custom.resource1": {
+						IdentifiedByKey: "attr.resource1.uid",
+						OtherProperties: []string{},
+					},
+					"custom.resource2": {
+						IdentifiedByKey: "attr.resource2.uid",
+						OtherProperties: []string{"other.attr.resource2"},
+					},
+				}),
+			},
+			configValidateAssert: assert.NoError,
 		},
 	} {
 		t.Run(tt.id.String(), func(t *testing.T) {

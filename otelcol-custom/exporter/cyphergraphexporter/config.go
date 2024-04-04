@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/url"
 
+	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/configopaque"
 	"go.opentelemetry.io/collector/config/configretry"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -15,39 +16,44 @@ const (
 )
 
 var (
+	// Config error messages
+	errMultipleAuthMethod = errors.New("cannot mix multiple authentication methods")
+)
+
+var (
 	// defaultResourcesMappers provides a selection of ResourceMappers following the
 	// OpenTelemetry Resource Semantic [https://opentelemetry.io/docs/specs/semconv/resource/]
-	defaultResourcesMappers = map[string]ResourceMapper{
+	defaultResourcesMappers = map[string]*ResourceMapper{
 		"service": {
-			LabelID:     string(semconv.ServiceNameKey),
-			OtherLabels: []string{string(semconv.ServiceVersionKey), string(semconv.ServiceInstanceIDKey), string(semconv.ServiceNamespaceKey)},
+			IdentifiedByKey: string(semconv.ServiceNameKey),
+			OtherProperties: []string{string(semconv.ServiceVersionKey), string(semconv.ServiceInstanceIDKey), string(semconv.ServiceNamespaceKey)},
 		},
 		"container": {
-			LabelID:     string(semconv.ContainerIDKey),
-			OtherLabels: []string{string(semconv.ContainerNameKey)},
+			IdentifiedByKey: string(semconv.ContainerIDKey),
+			OtherProperties: []string{string(semconv.ContainerNameKey)},
 		},
 		"container.image": {
-			LabelID:     string(semconv.ContainerImageIDKey),
-			OtherLabels: []string{string(semconv.ContainerImageNameKey)},
+			IdentifiedByKey: string(semconv.ContainerImageIDKey),
+			OtherProperties: []string{string(semconv.ContainerImageNameKey)},
 		},
 		"host": {
-			LabelID:     string(semconv.HostIDKey),
-			OtherLabels: []string{string(semconv.HostNameKey), string(semconv.HostImageIDKey), string(semconv.HostImageNameKey), string(semconv.HostIPKey), string(semconv.HostTypeKey)},
+			IdentifiedByKey: string(semconv.HostIDKey),
+			OtherProperties: []string{string(semconv.HostNameKey), string(semconv.HostImageIDKey), string(semconv.HostImageNameKey), string(semconv.HostIPKey), string(semconv.HostTypeKey)},
 		},
 		"deployment": {
-			LabelID: string(semconv.DeploymentEnvironmentKey),
+			IdentifiedByKey: string(semconv.DeploymentEnvironmentKey),
 		},
 		"k8s.cluster": {
-			LabelID:     string(semconv.K8SClusterUIDKey),
-			OtherLabels: []string{string(semconv.K8SClusterNameKey)},
+			IdentifiedByKey: string(semconv.K8SClusterUIDKey),
+			OtherProperties: []string{string(semconv.K8SClusterNameKey)},
 		},
 		"k8s.node": {
-			LabelID:     string(semconv.K8SNodeNameKey),
-			OtherLabels: []string{string(semconv.K8SNodeUIDKey)},
+			IdentifiedByKey: string(semconv.K8SNodeNameKey),
+			OtherProperties: []string{string(semconv.K8SNodeUIDKey)},
 		},
 		"k8s.pod": {
-			LabelID:     string(semconv.K8SPodUIDKey),
-			OtherLabels: []string{string(semconv.K8SPodNameKey)},
+			IdentifiedByKey: string(semconv.K8SPodUIDKey),
+			OtherProperties: []string{string(semconv.K8SPodNameKey)},
 		},
 	}
 )
@@ -88,34 +94,31 @@ type Config struct {
 	// Graph node labels are provided as keys of the ResourceMappers field:
 	//   resources:
 	//     "k8s.pod":
-	//       label_id: "k8s.pod.uid"
-	//       other_labels: [ "k8s.pod.name" ]
+	//       identified_by: "k8s.pod.uid"
+	//       other_properties: [ "k8s.pod.name" ]
 	//     "k8s.node":
-	//       label_id: "k8s.node.uid"
-	//       other_labels: [ "k8s.node.name" ]
+	//       identified_by: "k8s.node.uid"
+	//       other_properties: [ "k8s.node.name" ]
 	// This configuration will generate for each spans processed by the receiver two different
 	// resource nodes: one with label 'k8s.node' and one with label 'k8s.pod'. Nodes with the same
-	// label sharing the same value of the attribute referenced in the 'label_id' field will be
+	// label sharing the same value of the attribute referenced in the 'identified_by' field will be
 	// merged together. This configuration will only generate one node for each single pods more
 	// one for each single nodes in the kubernetes cluster.
-	ResourceMappers map[string]ResourceMapper `mapstructure:"resources,omitempty"`
+	ResourceMappers map[string]*ResourceMapper `mapstructure:"resources"`
 }
+
+var _ component.Config = (*Config)(nil)
 
 // ResourceMapper describes how [go.opentelemetry.io/collector/pdata/pcommon.Resource] attributes
 // get parsed to create a node in the graph.
 type ResourceMapper struct {
-	// LabelID represents the attrribute Key of a resource whose value will be used as index for
-	// for a given resource node.
-	LabelID string `mapstructure:"label_id"`
+	// IdentifiedByKey represents the attribute Key of a resource whose value will be used as index for
+	// for a given resource node, if this property is missing, the resource node will not be added in the graph.
+	IdentifiedByKey string `mapstructure:"identified_by"`
 
-	// OtherLabels represents additionnal labels whose value will be added as additional properties
-	// for the nodes of the graph.
-	OtherLabels []string `mapstructure:"other_labels"`
+	// OtherProperties represents additionnal properties added to the resource nodes that will not be indexed.
+	OtherProperties []string `mapstructure:"other_properties"`
 }
-
-var (
-	errMultipleAuthMethod = errors.New("cannot mix multiple authentication methods")
-)
 
 func (cfg *Config) Validate() error {
 	if _, err := url.Parse(cfg.DatabaseURI); err != nil {
