@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/pdata/ptrace"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 
 	"github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter/internal/graphmodel"
@@ -46,9 +47,9 @@ func newTracesExporter(cfg *Config, set exporter.CreateSettings) (cte *cyphergra
 	if err != nil {
 		return
 	}
-	labelFromAttr := make(map[string]string, len(cfg.ResourceMappers))
+	labelFromAttr := make(map[attribute.Key]string, len(cfg.ResourceMappers))
 	for label, matcher := range cfg.ResourceMappers {
-		labelFromAttr[matcher.LabelID] = label
+		labelFromAttr[attribute.Key(matcher.IdentifiedByKey)] = label
 	}
 	cte.encoder = graphmodel.NewEncoder(labelFromAttr)
 	return

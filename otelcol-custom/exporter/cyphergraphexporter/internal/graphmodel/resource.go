@@ -14,7 +14,7 @@ const (
 
 func (e *Encoder) MergeResource(ctx context.Context, tx neo4j.ManagedTransaction, r *pcommon.Resource) error {
 	for attrKey, label := range e.resourceMap {
-		if attrValue, ok := r.Attributes().AsRaw()[attrKey]; ok {
+		if attrValue, ok := r.Attributes().AsRaw()[string(attrKey)]; ok {
 			result, err := tx.Run(ctx, cypherQueryNewResource, map[string]any{
 				"id":   attrValue,
 				"type": label,

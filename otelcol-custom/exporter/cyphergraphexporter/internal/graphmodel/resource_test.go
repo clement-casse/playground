@@ -7,32 +7,47 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/collector/pdata/pcommon"
+	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
-func resourceFrom(attr map[string]string) pcommon.Resource {
+const databaseEngine = "memgraph"
+
+// resourceFrom returns a [go.opentelemetry.io/collector/pdata/pcommon.Resource] with the provided Key Value pairs.
+func resourceFrom(attr []attribute.KeyValue) pcommon.Resource {
 	res := pcommon.NewResource()
-	for k, v := range attr {
-		res.Attributes().PutStr(k, v)
+	for _, kv := range attr {
+		switch kv.Value.Type() {
+		case attribute.BOOL:
+			res.Attributes().PutBool(string(kv.Key), kv.Value.AsBool())
+		case attribute.INT64:
+			res.Attributes().PutInt(string(kv.Key), kv.Value.AsInt64())
+		case attribute.FLOAT64:
+			res.Attributes().PutDouble(string(kv.Key), kv.Value.AsFloat64())
+		case attribute.STRING:
+			res.Attributes().PutStr(string(kv.Key), kv.Value.AsString())
+		case attribute.BOOLSLICE, attribute.INT64SLICE, attribute.FLOAT64SLICE, attribute.STRINGSLICE:
+			panic("slice attributes are not managed by the resourceFrom function")
+		default:
+			panic("Type not handled by resourceFrom function: " + kv.Value.Type().String())
+		}
 	}
 	return res
 }
 
 var (
-	databaseEngine = "memgraph"
-
 	// emptyResource  = pcommon.NewResource()
 	// simpleResource = resourceFrom(map[string]string{
 	// 	string(semconv.ServiceNameKey): "name-of-the-service",
 	// })
-	k8sResource = resourceFrom(map[string]string{
-		string(semconv.ServiceNameKey):       "my-deployment",
-		string(semconv.K8SClusterNameKey):    "my-cluster",
-		string(semconv.K8SNamespaceNameKey):  "my-namespace",
-		string(semconv.K8SDeploymentNameKey): "my-deployment",
-		string(semconv.K8SReplicaSetNameKey): "my-deployment-66cf4d99b5",
-		string(semconv.K8SPodNameKey):        "my-deployment-66cf4d99b5-kpqg",
-		string(semconv.K8SPodUIDKey):         "7293ca81-d35e-459d-b15a-a8197fbc03e4",
+	k8sResource = resourceFrom([]attribute.KeyValue{
+		semconv.ServiceName("my-deployment"),
+		semconv.K8SClusterName("my-cluster"),
+		semconv.K8SNamespaceName("my-namespace"),
+		semconv.K8SDeploymentName("my-deployment"),
+		semconv.K8SReplicaSetName("my-deployment-66cf4d99b5"),
+		semconv.K8SPodName("my-deployment-66cf4d99b5-kpqg"),
+		semconv.K8SPodUID("7293ca81-d35e-459d-b15a-a8197fbc03e4"),
 	})
 )
 
@@ -42,10 +57,10 @@ func TestMergeResource(t *testing.T) {
 	assert.NoError(t, err)
 	defer closeFunc(ctx)
 
-	encoder := NewEncoder(map[string]string{
-		string(semconv.K8SPodNameKey):        "k8s.pod",
-		string(semconv.K8SDeploymentNameKey): "k8s.deployment",
-		string(semconv.K8SClusterNameKey):    "k8s.cluster",
+	encoder := NewEncoder(map[attribute.Key]string{
+		semconv.K8SPodNameKey:        "k8s.pod",
+		semconv.K8SDeploymentNameKey: "k8s.deployment",
+		semconv.K8SClusterNameKey:    "k8s.cluster",
 	})
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{})
