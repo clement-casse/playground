@@ -2,6 +2,7 @@
     "recommendations": [
         "golang.go",
         "jnoortheen.nix-ide",
-        "pinage404.nix-extension-pack"
+        "pinage404.nix-extension-pack",
+        "jakeboone02.cypher-query-language"
     ]
 }

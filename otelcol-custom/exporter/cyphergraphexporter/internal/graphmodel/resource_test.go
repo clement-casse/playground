@@ -57,10 +57,10 @@ func TestMergeResource(t *testing.T) {
 	assert.NoError(t, err)
 	defer closeFunc(ctx)
 
-	encoder := NewEncoder(map[attribute.Key]string{
-		semconv.K8SPodNameKey:        "k8s.pod",
-		semconv.K8SDeploymentNameKey: "k8s.deployment",
-		semconv.K8SClusterNameKey:    "k8s.cluster",
+	encoder := NewEncoder(map[attribute.Key]ResourceEncoder{
+		semconv.K8SPodNameKey:        {"k8s.pod", []attribute.Key{semconv.K8SPodUIDKey}},
+		semconv.K8SDeploymentNameKey: {"k8s.deployment", []attribute.Key{semconv.K8SDeploymentUIDKey}},
+		semconv.K8SClusterNameKey:    {"k8s.cluster", []attribute.Key{semconv.K8SClusterUIDKey}},
 	})
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{})

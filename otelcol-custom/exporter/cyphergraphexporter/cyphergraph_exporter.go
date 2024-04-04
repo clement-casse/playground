@@ -47,9 +47,15 @@ func newTracesExporter(cfg *Config, set exporter.CreateSettings) (cte *cyphergra
 	if err != nil {
 		return
 	}
-	labelFromAttr := make(map[attribute.Key]string, len(cfg.ResourceMappers))
+	labelFromAttr := make(map[attribute.Key]graphmodel.ResourceEncoder, len(cfg.ResourceMappers))
 	for label, matcher := range cfg.ResourceMappers {
-		labelFromAttr[attribute.Key(matcher.IdentifiedByKey)] = label
+		labelFromAttr[attribute.Key(matcher.IdentifiedByKey)] = graphmodel.ResourceEncoder{
+			ResourceType:    label,
+			AdditionalProps: make([]attribute.Key, len(matcher.OtherProperties)),
+		}
+		for i, prop := range matcher.OtherProperties {
+			labelFromAttr[attribute.Key(matcher.IdentifiedByKey)].AdditionalProps[i] = attribute.Key(prop)
+		}
 	}
 	cte.encoder = graphmodel.NewEncoder(labelFromAttr)
 	return
