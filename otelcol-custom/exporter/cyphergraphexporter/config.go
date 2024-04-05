@@ -28,20 +28,16 @@ var (
 			IdentifiedByKey: string(semconv.ServiceNameKey),
 			OtherProperties: []string{string(semconv.ServiceVersionKey), string(semconv.ServiceInstanceIDKey), string(semconv.ServiceNamespaceKey)},
 		},
+		"deployment": {
+			IdentifiedByKey: string(semconv.DeploymentEnvironmentKey),
+		},
 		"container": {
 			IdentifiedByKey: string(semconv.ContainerIDKey),
-			OtherProperties: []string{string(semconv.ContainerNameKey)},
-		},
-		"container.image": {
-			IdentifiedByKey: string(semconv.ContainerImageIDKey),
-			OtherProperties: []string{string(semconv.ContainerImageNameKey)},
+			OtherProperties: []string{string(semconv.ContainerNameKey), string(semconv.ContainerImageIDKey), string(semconv.ContainerImageNameKey)},
 		},
 		"host": {
 			IdentifiedByKey: string(semconv.HostIDKey),
 			OtherProperties: []string{string(semconv.HostNameKey), string(semconv.HostImageIDKey), string(semconv.HostImageNameKey), string(semconv.HostIPKey), string(semconv.HostTypeKey)},
-		},
-		"deployment": {
-			IdentifiedByKey: string(semconv.DeploymentEnvironmentKey),
 		},
 		"k8s.cluster": {
 			IdentifiedByKey: string(semconv.K8SClusterUIDKey),
@@ -55,6 +51,26 @@ var (
 			IdentifiedByKey: string(semconv.K8SPodUIDKey),
 			OtherProperties: []string{string(semconv.K8SPodNameKey)},
 		},
+		"cloud.az": {
+			IdentifiedByKey: string(semconv.CloudAvailabilityZoneKey),
+			OtherProperties: []string{string(semconv.CloudProviderKey)},
+		},
+		"cloud.region": {
+			IdentifiedByKey: string(semconv.CloudRegionKey),
+			OtherProperties: []string{string(semconv.CloudProviderKey)},
+		},
+	}
+
+	// defaultContainmentOrder provides the order of containment of resources
+	defaultContainmentOrder = map[string][]string{
+		"service":      {"deployment"},
+		"deployment":   {},
+		"container":    {"host", "k8s.pod"},
+		"k8s.pod":      {"k8s.node", "cloud.az"},
+		"k8s.node":     {"k8s.cluster"},
+		"k8s.cluster":  {},
+		"cloud.az":     {"cloud.region"},
+		"cloud.region": {},
 	}
 )
 

@@ -19,6 +19,7 @@ func (e *Encoder) MergeResource(ctx context.Context, tx neo4j.ManagedTransaction
 	// - "label" designates the kind of resource e.g. a K8S pod, a VM, a container
 	// - "id" designates its unique identifier in the system
 	// - "props" is another map[string]string with additional parameter to be added to the resource as additional context.
+	// - "contained_in" links to the node that contains this resource by identifying it by both its label and id
 	rParams := make([]map[string]any, 0, len(e.resourceMap))
 	for attrKey, re := range e.resourceMap {
 		if attrValue, ok := r.Attributes().Get(string(attrKey)); ok {
@@ -28,10 +29,31 @@ func (e *Encoder) MergeResource(ctx context.Context, tx neo4j.ManagedTransaction
 					props[string(ap)] = value.AsString()
 				}
 			}
+			var containedIn []map[string]any
+			if rlist, ok := e.containmentOrder[re.ResourceType]; ok {
+				containedIn = make([]map[string]any, 0, len(rlist))
+				for _, r := range rlist {
+					// Reverse lookup of e.resourceMap to find which id has the given labels
+					// Should be cached in the encoder to avoid looping over resources again
+					// in an inner for loop
+					for key, rMapper := range e.resourceMap {
+						if rMapper.ResourceType == r {
+							containedIn = append(containedIn, map[string]any{
+								"label": r,
+								"id":    string(key),
+							})
+							break
+						}
+					}
+				}
+			} else {
+				containedIn = []map[string]any{}
+			}
 			rParams = append(rParams, map[string]any{
-				"label": re.ResourceType,
-				"id":    attrValue.AsString(),
-				"props": props,
+				"label":        re.ResourceType,
+				"id":           attrValue.AsString(),
+				"props":        props,
+				"contained_in": containedIn,
 			})
 		}
 	}

@@ -57,7 +57,7 @@ func newTracesExporter(cfg *Config, set exporter.CreateSettings) (cte *cyphergra
 			labelFromAttr[attribute.Key(matcher.IdentifiedByKey)].AdditionalProps[i] = attribute.Key(prop)
 		}
 	}
-	cte.encoder = graphmodel.NewEncoder(labelFromAttr)
+	cte.encoder = graphmodel.NewEncoder(labelFromAttr, defaultContainmentOrder)
 	return
 }
 

@@ -61,6 +61,10 @@ func TestMergeResource(t *testing.T) {
 		semconv.K8SPodNameKey:        {"k8s.pod", []attribute.Key{semconv.K8SPodUIDKey}},
 		semconv.K8SDeploymentNameKey: {"k8s.deployment", []attribute.Key{semconv.K8SDeploymentUIDKey}},
 		semconv.K8SClusterNameKey:    {"k8s.cluster", []attribute.Key{semconv.K8SClusterUIDKey}},
+	}, map[string][]string{
+		"k8s.pod":        {"k8s.deployment"},
+		"k8s.deployment": {"k8s.cluster"},
+		"k8s.cluster":    {},
 	})
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{})
@@ -70,7 +74,7 @@ func TestMergeResource(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		result, err2 := tx.Run(ctx, `MATCH (r:Resource) RETURN r.id, r.type`, map[string]any{})
+		result, err2 := tx.Run(ctx, `MATCH (r1:Resource)-[:IS_CONTAINED]->(r2:Resource) RETURN r1.id, r1.type, r2.id, r2.type`, map[string]any{})
 		assert.NoError(t, err2)
 		records, err2 := result.Collect(ctx)
 		assert.NoError(t, err2)
