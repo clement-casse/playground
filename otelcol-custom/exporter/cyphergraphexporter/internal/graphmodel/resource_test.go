@@ -9,6 +9,7 @@ import (
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
+	"go.uber.org/zap"
 )
 
 const databaseEngine = "memgraph"
@@ -56,6 +57,7 @@ func TestMergeResource(t *testing.T) {
 	driver, closeFunc, err := InitCypherDBTestContainer(ctx, databaseEngine)
 	assert.NoError(t, err)
 	defer closeFunc(ctx)
+	logger, _ := zap.NewDevelopment()
 
 	encoder := NewEncoder(map[attribute.Key]ResourceEncoder{
 		semconv.K8SPodNameKey:        {"k8s.pod", []attribute.Key{semconv.K8SPodUIDKey}},
@@ -65,7 +67,7 @@ func TestMergeResource(t *testing.T) {
 		"k8s.pod":        {"k8s.deployment"},
 		"k8s.deployment": {"k8s.cluster"},
 		"k8s.cluster":    {},
-	})
+	}, logger)
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{})
 	_, err = session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -74,7 +76,7 @@ func TestMergeResource(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		result, err2 := tx.Run(ctx, `MATCH (r1:Resource)-[:IS_CONTAINED]->(r2:Resource) RETURN r1.id, r1.type, r2.id, r2.type`, map[string]any{})
+		result, err2 := tx.Run(ctx, `MATCH (r1:Resource)-[:IS_CONTAINED]->(r2:Resource) RETURN r1.type, r1.id, r2.type, r2.id`, map[string]any{})
 		assert.NoError(t, err2)
 		records, err2 := result.Collect(ctx)
 		assert.NoError(t, err2)
