@@ -9,6 +9,8 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"go.opentelemetry.io/collector/pdata/pcommon"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/goleak"
 )
 
@@ -19,6 +21,30 @@ var (
 
 func TestMain(m *testing.M) {
 	goleak.VerifyTestMain(m)
+}
+
+// The following are utility functions used throughout the various tests present in this package.
+
+// resourceFrom returns a [go.opentelemetry.io/collector/pdata/pcommon.Resource] with the provided Key Value pairs.
+func resourceFrom(attr []attribute.KeyValue) pcommon.Resource {
+	res := pcommon.NewResource()
+	for _, kv := range attr {
+		switch kv.Value.Type() {
+		case attribute.BOOL:
+			res.Attributes().PutBool(string(kv.Key), kv.Value.AsBool())
+		case attribute.INT64:
+			res.Attributes().PutInt(string(kv.Key), kv.Value.AsInt64())
+		case attribute.FLOAT64:
+			res.Attributes().PutDouble(string(kv.Key), kv.Value.AsFloat64())
+		case attribute.STRING:
+			res.Attributes().PutStr(string(kv.Key), kv.Value.AsString())
+		case attribute.BOOLSLICE, attribute.INT64SLICE, attribute.FLOAT64SLICE, attribute.STRINGSLICE:
+			panic("slice attributes are not managed by the resourceFrom function")
+		default:
+			panic("Type not handled by resourceFrom function: " + kv.Value.Type().String())
+		}
+	}
+	return res
 }
 
 // InitCypherDBTestContainer is a helper function that starts a compatible database in a TestContainer to execute Cypher

@@ -27,6 +27,8 @@ type Encoder struct {
 	logger *zap.SugaredLogger
 }
 
+// ResourceEncoder is a struct that identifies a type of resource and all the attributes found in telemetry
+// data that will be used to create a vertex in graph encoding procedure.
 type ResourceEncoder struct {
 	ResourceType       string
 	AdditionalPropKeys []attribute.Key
