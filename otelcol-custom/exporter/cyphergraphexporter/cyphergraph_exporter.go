@@ -8,12 +8,16 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/pdata/ptrace"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
+
+	"github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter/internal/graphmodel"
+	"github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter/internal/neo4jdriverwrap"
 )
 
 type cyphergraphTraceExporter struct {
-	driver        neo4j.DriverWithContext
-	labelFromAttr map[string]string
+	driver  neo4j.DriverWithContext
+	encoder *graphmodel.Encoder
 
 	logger *zap.Logger
 }
@@ -36,17 +40,24 @@ func newTracesExporter(cfg *Config, set exporter.CreateSettings) (cte *cyphergra
 	cte.driver, err = neo4j.NewDriverWithContext(
 		cfg.DatabaseURI,
 		neo4jAuth,
-		withLogger(set.Logger),
-		withUserAgent(cfg.UserAgent),
-		withBackOffConfig(&cfg.BackOffConfig),
+		neo4jdriverwrap.WithLogger(set.Logger),
+		neo4jdriverwrap.WithUserAgent(cfg.UserAgent),
+		neo4jdriverwrap.WithBackOffConfig(&cfg.BackOffConfig),
 	)
 	if err != nil {
 		return
 	}
-	cte.labelFromAttr = make(map[string]string, len(cfg.ResourceMappers))
+	labelFromAttr := make(map[attribute.Key]graphmodel.ResourceEncoder, len(cfg.ResourceMappers))
 	for label, matcher := range cfg.ResourceMappers {
-		cte.labelFromAttr[matcher.LabelID] = label
+		labelFromAttr[attribute.Key(matcher.IdentifiedByKey)] = graphmodel.ResourceEncoder{
+			ResourceType:       label,
+			AdditionalPropKeys: make([]attribute.Key, len(matcher.OtherProperties)),
+		}
+		for i, prop := range matcher.OtherProperties {
+			labelFromAttr[attribute.Key(matcher.IdentifiedByKey)].AdditionalPropKeys[i] = attribute.Key(prop)
+		}
 	}
+	cte.encoder = graphmodel.NewEncoder(labelFromAttr, defaultContainmentOrder, set.Logger)
 	return
 }
 

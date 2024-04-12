@@ -27,3 +27,11 @@ cyphergraph/ERRORwithallauthmethods:
   kerberos_ticket: "somevalue"
 cyphergraph/ERRORbadurl:
   db_uri: "://abcdefghijklmno"
+cyphergraph/withcustomresourcemapper:
+  db_uri: "bolt://neo4j-host:7687"
+  resources:
+    "custom.resource1":
+      identified_by: "attr.resource1.uid"
+    "custom.Resource2":
+      identified_by: "attr.resource2.uid"
+      other_properties: [ "other.attr.resource2" ]
