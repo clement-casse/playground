@@ -14,7 +14,6 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
 	"tailscale.com/types/logger"
-	"tailscale.com/util/set"
 )
 
 // LogSvcState obtains the state of the Windows service named rootSvcName and
@@ -60,13 +59,13 @@ type walkSvcFunc func(*mgr.Service, mgr.Config)
 // walkServices opens the service named rootSvcName and walks its dependency
 // graph, invoking callback for each service (including the root itself).
 func walkServices(rootSvcName string, callback walkSvcFunc) error {
-	scm, err := ConnectToLocalSCMForRead()
+	scm, err := connectToLocalSCMForRead()
 	if err != nil {
 		return fmt.Errorf("connecting to Service Control Manager: %w", err)
 	}
 	defer scm.Disconnect()
 
-	rootSvc, err := OpenServiceForRead(scm, rootSvcName)
+	rootSvc, err := openServiceForRead(scm, rootSvcName)
 	if err != nil {
 		return fmt.Errorf("opening service %q: %w", rootSvcName, err)
 	}
@@ -79,7 +78,7 @@ func walkServices(rootSvcName string, callback walkSvcFunc) error {
 		}
 	}()
 
-	seen := set.Set[string]{}
+	seen := make(map[string]struct{})
 
 	for err == nil && len(deps) > 0 {
 		err = func() error {
@@ -88,7 +87,7 @@ func walkServices(rootSvcName string, callback walkSvcFunc) error {
 
 			deps = deps[:len(deps)-1]
 
-			seen.Add(curSvc.Name)
+			seen[curSvc.Name] = struct{}{}
 
 			curCfg, err := curSvc.Config()
 			if err != nil {
@@ -98,11 +97,11 @@ func walkServices(rootSvcName string, callback walkSvcFunc) error {
 			callback(curSvc, curCfg)
 
 			for _, depName := range curCfg.Dependencies {
-				if seen.Contains(depName) {
+				if _, ok := seen[depName]; ok {
 					continue
 				}
 
-				depSvc, err := OpenServiceForRead(scm, depName)
+				depSvc, err := openServiceForRead(scm, depName)
 				if err != nil {
 					return fmt.Errorf("opening service %q: %w", depName, err)
 				}
@@ -276,10 +275,10 @@ func makeLogEntry(svc *mgr.Service, status svc.Status, cfg mgr.Config) (entry sv
 	return entry
 }
 
-// ConnectToLocalSCMForRead connects to the Windows Service Control Manager with
+// connectToLocalSCMForRead connects to the Windows Service Control Manager with
 // read-only access. x/sys/windows/svc/mgr/Connect requests read+write access,
-// which requires Administrative access rights.
-func ConnectToLocalSCMForRead() (*mgr.Mgr, error) {
+// which requires higher privileges than we want.
+func connectToLocalSCMForRead() (*mgr.Mgr, error) {
 	h, err := windows.OpenSCManager(nil, nil, windows.GENERIC_READ)
 	if err != nil {
 		return nil, err
@@ -287,10 +286,10 @@ func ConnectToLocalSCMForRead() (*mgr.Mgr, error) {
 	return &mgr.Mgr{Handle: h}, nil
 }
 
-// OpenServiceForRead opens a service with read-only access.
+// openServiceForRead opens a service with read-only access.
 // x/sys/windows/svc/mgr/(*Mgr).OpenService requests read+write access,
-// which requires Administrative access rights.
-func OpenServiceForRead(scm *mgr.Mgr, svcName string) (*mgr.Service, error) {
+// which requires higher privileges than we want.
+func openServiceForRead(scm *mgr.Mgr, svcName string) (*mgr.Service, error) {
 	svcNamePtr, err := windows.UTF16PtrFromString(svcName)
 	if err != nil {
 		return nil, err

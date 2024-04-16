@@ -18,7 +18,7 @@ services:
   # https://tailscale.com/kb/1282/docker. This container will be used as network 'base' for the
   # traefik container.
   tailscale-traefik:
-    image: tailscale/tailscale:latest
+    image: tailscale/tailscale:v1.44
     hostname: traefik-plugin-test # This name will appear the tailscale admin console.
     cap_add: [ net_admin, sys_module ]
     environment:
@@ -79,6 +79,7 @@ services:
       GOPATH: /plugins-local # So that plugin in recognized
       TS_SOCKET: "/var/run/tailscale/tailscaled.sock" # Env var used by tailscale/tscert lib to find tailscaled socket
       TAILSCALE_TRAEFIK_HOST_FQDN: ${TAILSCALE_TRAEFIK_HOST_FQDN?err} # Env var injected to be used by dynamic config with go templates
+      YAEGI_UNSAFE: "1"
     command: [
       --configfile=/etc/traefik/traefik.toml,
     ]

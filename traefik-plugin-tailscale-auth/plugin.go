@@ -12,7 +12,9 @@ import (
 )
 
 // Config the plugin configuration.
-type Config struct{}
+type Config struct {
+	Socket string `yaml:"socket"`
+}
 
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
@@ -23,6 +25,8 @@ func CreateConfig() *Config {
 type TailscaleAuth struct {
 	name string
 	next http.Handler
+
+	localClient *tailscale.LocalClient
 }
 
 // New creates the Traefik plugin.
@@ -30,6 +34,8 @@ func New(_ context.Context, next http.Handler, _ *Config, name string) (http.Han
 	return &TailscaleAuth{
 		name: name,
 		next: next,
+
+		localClient: &tailscale.LocalClient{UseSocketOnly: true},
 	}, nil
 }
 
@@ -47,8 +53,7 @@ func (ts *TailscaleAuth) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	localClient := &tailscale.LocalClient{UseSocketOnly: true}
-	info, err := localClient.WhoIs(req.Context(), remoteAddr.String())
+	info, err := ts.localClient.WhoIs(req.Context(), remoteAddr.String())
 	if err != nil {
 		rw.WriteHeader(http.StatusUnauthorized)
 		os.Stderr.WriteString("can't look up " + remoteAddr.String() + " : " + err.Error())

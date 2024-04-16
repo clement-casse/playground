@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"sync/atomic"
 	"time"
+	_ "unsafe" // for go:linkname
 )
 
 // Time is the number of nanoseconds elapsed since an unspecified reference start time.
@@ -28,7 +29,7 @@ func Now() Time {
 	// The corresponding package time expression never does, if the wall clock is correct.
 	// Preserve this correspondence by increasing the "base" monotonic clock by a fair amount.
 	const baseOffset int64 = 1 << 55 // approximately 10,000 hours in nanoseconds
-	return Time(int64(time.Since(baseWall)) + baseOffset)
+	return Time(now() + baseOffset)
 }
 
 // Since returns the time elapsed since t.
@@ -71,6 +72,9 @@ func (t *Time) LoadAtomic() Time {
 	return Time(atomic.LoadInt64((*int64)(t)))
 }
 
+//go:linkname now runtime.nanotime1
+func now() int64
+
 // baseWall and baseMono are a pair of almost-identical times used to correlate a Time with a wall time.
 var (
 	baseWall time.Time
@@ -100,8 +104,7 @@ func (t Time) WallTime() time.Time {
 
 // MarshalJSON formats t for JSON as if it were a time.Time.
 // We format Time this way for backwards-compatibility.
-// Time does not survive a MarshalJSON/UnmarshalJSON round trip unchanged
-// across different invocations of the Go process. This is best-effort only.
+// This is best-effort only. Time does not survive a MarshalJSON/UnmarshalJSON round trip unchanged.
 // Since t is a monotonic time, it can vary from the actual wall clock by arbitrary amounts.
 // Even in the best of circumstances, it may vary by a few milliseconds.
 func (t Time) MarshalJSON() ([]byte, error) {
@@ -110,8 +113,7 @@ func (t Time) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON sets t according to data.
-// Time does not survive a MarshalJSON/UnmarshalJSON round trip unchanged
-// across different invocations of the Go process. This is best-effort only.
+// This is best-effort only. Time does not survive a MarshalJSON/UnmarshalJSON round trip unchanged.
 func (t *Time) UnmarshalJSON(data []byte) error {
 	var tt time.Time
 	err := tt.UnmarshalJSON(data)
@@ -122,6 +124,6 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 		*t = 0
 		return nil
 	}
-	*t = baseMono.Add(tt.Sub(baseWall))
+	*t = Now().Add(-time.Since(tt))
 	return nil
 }

@@ -150,9 +150,8 @@ func (c *Client) ACLHuJSON(ctx context.Context) (acl *ACLHuJSON, err error) {
 // ACLTestFailureSummary specifies the JSON format sent to the
 // JavaScript client to be rendered in the HTML.
 type ACLTestFailureSummary struct {
-	User     string   `json:"user,omitempty"`
-	Errors   []string `json:"errors,omitempty"`
-	Warnings []string `json:"warnings,omitempty"`
+	User   string   `json:"user"`
+	Errors []string `json:"errors"`
 }
 
 // ACLTestError is ErrResponse but with an extra field to account for ACLTestFailureSummary.

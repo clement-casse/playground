@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & AUTHORS
 // SPDX-License-Identifier: BSD-3-Clause
 
-//go:build !windows && !js && !plan9
+//go:build !windows && !js
 
 package safesocket
 
@@ -16,11 +16,11 @@ import (
 	"runtime"
 )
 
-func connect(path string) (net.Conn, error) {
+func connect(s *ConnectionStrategy) (net.Conn, error) {
 	if runtime.GOOS == "js" {
 		return nil, errors.New("safesocket.Connect not yet implemented on js/wasm")
 	}
-	return net.Dial("unix", path)
+	return net.Dial("unix", s.path)
 }
 
 func listen(path string) (net.Listener, error) {

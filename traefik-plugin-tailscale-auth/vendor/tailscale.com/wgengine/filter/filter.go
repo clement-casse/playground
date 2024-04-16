@@ -7,7 +7,6 @@ package filter
 import (
 	"fmt"
 	"net/netip"
-	"slices"
 	"sync"
 	"time"
 
@@ -16,11 +15,9 @@ import (
 	"tailscale.com/net/flowtrack"
 	"tailscale.com/net/netaddr"
 	"tailscale.com/net/packet"
-	"tailscale.com/tailcfg"
 	"tailscale.com/tstime/rate"
 	"tailscale.com/types/ipproto"
 	"tailscale.com/types/logger"
-	"tailscale.com/util/mak"
 )
 
 // Filter is a stateful packet filter.
@@ -300,9 +297,9 @@ var dummyPacket = []byte{
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 }
 
-// Check determines whether traffic from srcIP to dstIP:dstPort is allowed
-// using protocol proto.
-func (f *Filter) Check(srcIP, dstIP netip.Addr, dstPort uint16, proto ipproto.Proto) Response {
+// CheckTCP determines whether TCP traffic from srcIP to dstIP:dstPort
+// is allowed.
+func (f *Filter) CheckTCP(srcIP, dstIP netip.Addr, dstPort uint16) Response {
 	pkt := &packet.Parsed{}
 	pkt.Decode(dummyPacket) // initialize private fields
 	switch {
@@ -319,23 +316,16 @@ func (f *Filter) Check(srcIP, dstIP netip.Addr, dstPort uint16, proto ipproto.Pr
 	}
 	pkt.Src = netip.AddrPortFrom(srcIP, 0)
 	pkt.Dst = netip.AddrPortFrom(dstIP, dstPort)
-	pkt.IPProto = proto
-	if proto == ipproto.TCP {
-		pkt.TCPFlags = packet.TCPSyn
-	}
+	pkt.IPProto = ipproto.TCP
+	pkt.TCPFlags = packet.TCPSyn
 
 	return f.RunIn(pkt, 0)
 }
 
-// CheckTCP determines whether TCP traffic from srcIP to dstIP:dstPort
-// is allowed.
-func (f *Filter) CheckTCP(srcIP, dstIP netip.Addr, dstPort uint16) Response {
-	return f.Check(srcIP, dstIP, dstPort, ipproto.TCP)
-}
-
-// CapsWithValues appends to base the capabilities that srcIP has talking
+// AppendCaps appends to base the capabilities that srcIP has talking
 // to dstIP.
-func (f *Filter) CapsWithValues(srcIP, dstIP netip.Addr) tailcfg.PeerCapMap {
+func (f *Filter) AppendCaps(base []string, srcIP, dstIP netip.Addr) []string {
+	ret := base
 	var mm matches
 	switch {
 	case srcIP.Is4():
@@ -343,23 +333,17 @@ func (f *Filter) CapsWithValues(srcIP, dstIP netip.Addr) tailcfg.PeerCapMap {
 	case srcIP.Is6():
 		mm = f.cap6
 	}
-	var out tailcfg.PeerCapMap
 	for _, m := range mm {
 		if !ipInList(srcIP, m.Srcs) {
 			continue
 		}
 		for _, cm := range m.Caps {
 			if cm.Cap != "" && cm.Dst.Contains(dstIP) {
-				prev, ok := out[cm.Cap]
-				if !ok {
-					mak.Set(&out, cm.Cap, slices.Clone(cm.Values))
-					continue
-				}
-				out[cm.Cap] = append(prev, cm.Values...)
+				ret = append(ret, cm.Cap)
 			}
 		}
 	}
-	return out
+	return ret
 }
 
 // ShieldsUp reports whether this is a "shields up" (block everything

@@ -86,13 +86,6 @@ func MatchesFromFilterRules(pf []tailcfg.FilterRule) ([]Match, error) {
 						Cap: cap,
 					})
 				}
-				for cap, val := range cm.CapMap {
-					m.Caps = append(m.Caps, CapMatch{
-						Dst:    dstNet,
-						Cap:    tailcfg.PeerCapability(cap),
-						Values: val,
-					})
-				}
 			}
 		}
 

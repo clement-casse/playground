@@ -7,3 +7,4 @@ summary: >-
   A middleware plugin that authenticates the user through its Tailscale IP address using local Tailscale client.
 
 testData:
+  socket: /var/run/tailscale/tailscaled.sock

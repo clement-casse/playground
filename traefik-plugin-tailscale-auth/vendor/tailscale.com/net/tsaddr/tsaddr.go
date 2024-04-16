@@ -8,12 +8,10 @@ import (
 	"encoding/binary"
 	"errors"
 	"net/netip"
-	"slices"
 	"sync"
 
-	"go4.org/netipx"
+	"golang.org/x/exp/slices"
 	"tailscale.com/net/netaddr"
-	"tailscale.com/types/views"
 )
 
 // ChromeOSVMRange returns the subset of the CGNAT IPv4 range used by
@@ -37,6 +35,7 @@ func CGNATRange() netip.Prefix {
 
 var (
 	cgnatRange   oncePrefix
+	ulaRange     oncePrefix
 	tsUlaRange   oncePrefix
 	tsViaRange   oncePrefix
 	ula4To6Range oncePrefix
@@ -160,11 +159,6 @@ type oncePrefix struct {
 	v netip.Prefix
 }
 
-// FalseContainsIPFunc is shorthand for NewContainsIPFunc(views.Slice[netip.Prefix]{}).
-func FalseContainsIPFunc() func(ip netip.Addr) bool {
-	return func(ip netip.Addr) bool { return false }
-}
-
 // NewContainsIPFunc returns a func that reports whether ip is in addrs.
 //
 // It's optimized for the cases of addrs being empty and addrs
@@ -172,17 +166,20 @@ func FalseContainsIPFunc() func(ip netip.Addr) bool {
 // one IPv6 address).
 //
 // Otherwise the implementation is somewhat slow.
-func NewContainsIPFunc(addrs views.Slice[netip.Prefix]) func(ip netip.Addr) bool {
+func NewContainsIPFunc(addrs []netip.Prefix) func(ip netip.Addr) bool {
 	// Specialize the three common cases: no address, just IPv4
 	// (or just IPv6), and both IPv4 and IPv6.
-	if addrs.Len() == 0 {
+	if len(addrs) == 0 {
 		return func(netip.Addr) bool { return false }
 	}
 	// If any addr is more than a single IP, then just do the slow
 	// linear thing until
 	// https://github.com/inetaf/netaddr/issues/139 is done.
-	if views.SliceContainsFunc(addrs, func(p netip.Prefix) bool { return !p.IsSingleIP() }) {
-		acopy := addrs.AsSlice()
+	for _, a := range addrs {
+		if a.IsSingleIP() {
+			continue
+		}
+		acopy := append([]netip.Prefix(nil), addrs...)
 		return func(ip netip.Addr) bool {
 			for _, a := range acopy {
 				if a.Contains(ip) {
@@ -193,18 +190,18 @@ func NewContainsIPFunc(addrs views.Slice[netip.Prefix]) func(ip netip.Addr) bool
 		}
 	}
 	// Fast paths for 1 and 2 IPs:
-	if addrs.Len() == 1 {
-		a := addrs.At(0)
+	if len(addrs) == 1 {
+		a := addrs[0]
 		return func(ip netip.Addr) bool { return ip == a.Addr() }
 	}
-	if addrs.Len() == 2 {
-		a, b := addrs.At(0), addrs.At(1)
+	if len(addrs) == 2 {
+		a, b := addrs[0], addrs[1]
 		return func(ip netip.Addr) bool { return ip == a.Addr() || ip == b.Addr() }
 	}
 	// General case:
 	m := map[netip.Addr]bool{}
-	for i := range addrs.LenIter() {
-		m[addrs.At(i).Addr()] = true
+	for _, a := range addrs {
+		m[a.Addr()] = true
 	}
 	return func(ip netip.Addr) bool { return m[ip] }
 }
@@ -227,10 +224,9 @@ func PrefixIs6(p netip.Prefix) bool { return p.Addr().Is6() }
 
 // ContainsExitRoutes reports whether rr contains both the IPv4 and
 // IPv6 /0 route.
-func ContainsExitRoutes(rr views.Slice[netip.Prefix]) bool {
+func ContainsExitRoutes(rr []netip.Prefix) bool {
 	var v4, v6 bool
-	for i := range rr.LenIter() {
-		r := rr.At(i)
+	for _, r := range rr {
 		if r == allIPv4 {
 			v4 = true
 		} else if r == allIPv6 {
@@ -238,17 +234,6 @@ func ContainsExitRoutes(rr views.Slice[netip.Prefix]) bool {
 		}
 	}
 	return v4 && v6
-}
-
-// ContainsNonExitSubnetRoutes reports whether v contains Subnet
-// Routes other than ExitNode Routes.
-func ContainsNonExitSubnetRoutes(rr views.Slice[netip.Prefix]) bool {
-	for i := range rr.LenIter() {
-		if rr.At(i).Bits() != 0 {
-			return true
-		}
-	}
-	return false
 }
 
 var (
@@ -267,15 +252,20 @@ func ExitRoutes() []netip.Prefix { return []netip.Prefix{allIPv4, allIPv6} }
 
 // SortPrefixes sorts the prefixes in place.
 func SortPrefixes(p []netip.Prefix) {
-	slices.SortFunc(p, netipx.ComparePrefix)
+	slices.SortFunc(p, func(ri, rj netip.Prefix) bool {
+		if ri.Addr() == rj.Addr() {
+			return ri.Bits() < rj.Bits()
+		}
+		return ri.Addr().Less(rj.Addr())
+	})
 }
 
 // FilterPrefixes returns a new slice, not aliasing in, containing elements of
 // in that match f.
-func FilterPrefixesCopy(in views.Slice[netip.Prefix], f func(netip.Prefix) bool) []netip.Prefix {
+func FilterPrefixesCopy(in []netip.Prefix, f func(netip.Prefix) bool) []netip.Prefix {
 	var out []netip.Prefix
-	for i := range in.LenIter() {
-		if v := in.At(i); f(v) {
+	for _, v := range in {
+		if f(v) {
 			out = append(out, v)
 		}
 	}

@@ -29,10 +29,7 @@ func Watch(ctx context.Context, mu sync.Locker, tick, max time.Duration) chan ti
 			// Drop values written after c is closed.
 			return
 		}
-		select {
-		case c <- d:
-		case <-ctx.Done():
-		}
+		c <- d
 	}
 	closec := func() {
 		closemu.Lock()

@@ -2,6 +2,13 @@
 ## explicit; go 1.17
 filippo.io/edwards25519
 filippo.io/edwards25519/field
+# github.com/Microsoft/go-winio v0.6.1
+## explicit; go 1.17
+github.com/Microsoft/go-winio
+github.com/Microsoft/go-winio/internal/fs
+github.com/Microsoft/go-winio/internal/socket
+github.com/Microsoft/go-winio/internal/stringbuffer
+github.com/Microsoft/go-winio/pkg/guid
 # github.com/akutz/memconn v0.1.0
 ## explicit
 github.com/akutz/memconn
@@ -10,9 +17,6 @@ github.com/akutz/memconn
 github.com/alexbrainman/sspi
 github.com/alexbrainman/sspi/internal/common
 github.com/alexbrainman/sspi/negotiate
-# github.com/dblohm7/wingoes v0.0.0-20230929194252-e994401fc077
-## explicit; go 1.18
-github.com/dblohm7/wingoes
 # github.com/fxamacker/cbor/v2 v2.5.0
 ## explicit; go 1.12
 github.com/fxamacker/cbor/v2
@@ -43,13 +47,6 @@ github.com/mdlayher/socket
 # github.com/mitchellh/go-ps v1.0.0
 ## explicit; go 1.13
 github.com/mitchellh/go-ps
-# github.com/tailscale/go-winio v0.0.0-20231025203758-c4f33415bf55
-## explicit; go 1.17
-github.com/tailscale/go-winio
-github.com/tailscale/go-winio/internal/fs
-github.com/tailscale/go-winio/internal/socket
-github.com/tailscale/go-winio/internal/stringbuffer
-github.com/tailscale/go-winio/pkg/guid
 # github.com/x448/float16 v0.8.4
 ## explicit; go 1.11
 github.com/x448/float16
@@ -71,6 +68,13 @@ golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/nacl/box
 golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/salsa20/salsa
+# golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
+## explicit; go 1.20
+golang.org/x/exp/constraints
+golang.org/x/exp/slices
+# golang.org/x/mod v0.12.0
+## explicit; go 1.17
+golang.org/x/mod/semver
 # golang.org/x/net v0.18.0
 ## explicit; go 1.18
 golang.org/x/net/bpf
@@ -83,7 +87,7 @@ golang.org/x/sync/errgroup
 # golang.org/x/sys v0.15.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
-golang.org/x/sys/plan9
+golang.org/x/sys/execabs
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
@@ -95,11 +99,29 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+# golang.org/x/tools v0.11.0
+## explicit; go 1.18
+golang.org/x/tools/cmd/stringer
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/go/packages
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/event/tag
+golang.org/x/tools/internal/gcimporter
+golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/pkgbits
+golang.org/x/tools/internal/tokeninternal
+golang.org/x/tools/internal/typeparams
+golang.org/x/tools/internal/typesinternal
 # golang.zx2c4.com/wireguard/windows v0.5.3
 ## explicit; go 1.18
 golang.zx2c4.com/wireguard/windows/tunnel/winipcfg
-# tailscale.com v1.58.2
-## explicit; go 1.21
+# tailscale.com v1.44.2
+## explicit; go 1.20
 tailscale.com
 tailscale.com/atomicfile
 tailscale.com/client/tailscale
@@ -140,18 +162,10 @@ tailscale.com/types/views
 tailscale.com/util/clientmetric
 tailscale.com/util/cloudenv
 tailscale.com/util/cmpver
-tailscale.com/util/cmpx
-tailscale.com/util/ctxkey
 tailscale.com/util/dnsname
 tailscale.com/util/httpm
 tailscale.com/util/lineread
 tailscale.com/util/mak
-tailscale.com/util/multierr
-tailscale.com/util/nocasemaps
-tailscale.com/util/set
-tailscale.com/util/slicesx
-tailscale.com/util/syspolicy
-tailscale.com/util/vizerror
 tailscale.com/util/winutil
 tailscale.com/version
 tailscale.com/version/distro

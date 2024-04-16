@@ -53,10 +53,10 @@ func New() *tailcfg.Hostinfo {
 		GoVersion:       runtime.Version(),
 		Machine:         condCall(unameMachine),
 		DeviceModel:     deviceModel(),
+		PushDeviceToken: pushDeviceToken(),
 		Cloud:           string(cloudenv.Get()),
 		NoLogsNoSupport: envknob.NoLogsNoSupport(),
 		AllowsUpdate:    envknob.AllowsRemoteUpdate(),
-		WoLMACs:         getWoLMACs(),
 	}
 }
 
@@ -141,16 +141,15 @@ func packageTypeCached() string {
 type EnvType string
 
 const (
-	KNative            = EnvType("kn")
-	AWSLambda          = EnvType("lm")
-	Heroku             = EnvType("hr")
-	AzureAppService    = EnvType("az")
-	AWSFargate         = EnvType("fg")
-	FlyDotIo           = EnvType("fly")
-	Kubernetes         = EnvType("k8s")
-	DockerDesktop      = EnvType("dde")
-	Replit             = EnvType("repl")
-	HomeAssistantAddOn = EnvType("haao")
+	KNative         = EnvType("kn")
+	AWSLambda       = EnvType("lm")
+	Heroku          = EnvType("hr")
+	AzureAppService = EnvType("az")
+	AWSFargate      = EnvType("fg")
+	FlyDotIo        = EnvType("fly")
+	Kubernetes      = EnvType("k8s")
+	DockerDesktop   = EnvType("dde")
+	Replit          = EnvType("repl")
 )
 
 var envType atomic.Value // of EnvType
@@ -165,22 +164,22 @@ func GetEnvType() EnvType {
 }
 
 var (
-	deviceModelAtomic atomic.Value // of string
-	osVersionAtomic   atomic.Value // of string
-	desktopAtomic     atomic.Value // of opt.Bool
-	packagingType     atomic.Value // of string
-	appType           atomic.Value // of string
-	firewallMode      atomic.Value // of string
+	pushDeviceTokenAtomic atomic.Value // of string
+	deviceModelAtomic     atomic.Value // of string
+	osVersionAtomic       atomic.Value // of string
+	desktopAtomic         atomic.Value // of opt.Bool
+	packagingType         atomic.Value // of string
+	appType               atomic.Value // of string
 )
+
+// SetPushDeviceToken sets the device token for use in Hostinfo updates.
+func SetPushDeviceToken(token string) { pushDeviceTokenAtomic.Store(token) }
 
 // SetDeviceModel sets the device model for use in Hostinfo updates.
 func SetDeviceModel(model string) { deviceModelAtomic.Store(model) }
 
 // SetOSVersion sets the OS version.
 func SetOSVersion(v string) { osVersionAtomic.Store(v) }
-
-// SetFirewallMode sets the firewall mode for the app.
-func SetFirewallMode(v string) { firewallMode.Store(v) }
 
 // SetPackage sets the packaging type for the app.
 //
@@ -198,10 +197,8 @@ func deviceModel() string {
 	return s
 }
 
-// FirewallMode returns the firewall mode for the app.
-// It is empty if unset.
-func FirewallMode() string {
-	s, _ := firewallMode.Load().(string)
+func pushDeviceToken() string {
+	s, _ := pushDeviceTokenAtomic.Load().(string)
 	return s
 }
 
@@ -258,9 +255,6 @@ func getEnvType() EnvType {
 	if inReplit() {
 		return Replit
 	}
-	if inHomeAssistantAddOn() {
-		return HomeAssistantAddOn
-	}
 	return ""
 }
 
@@ -289,7 +283,7 @@ func inContainer() opt.Bool {
 		return nil
 	})
 	lineread.File("/proc/mounts", func(line []byte) error {
-		if mem.Contains(mem.B(line), mem.S("lxcfs /proc/cpuinfo fuse.lxcfs")) {
+		if mem.Contains(mem.B(line), mem.S("fuse.lxcfs")) {
 			ret.Set(true)
 			return io.EOF
 		}
@@ -335,7 +329,10 @@ func inAzureAppService() bool {
 }
 
 func inAWSFargate() bool {
-	return os.Getenv("AWS_EXECUTION_ENV") == "AWS_ECS_FARGATE"
+	if os.Getenv("AWS_EXECUTION_ENV") == "AWS_ECS_FARGATE" {
+		return true
+	}
+	return false
 }
 
 func inFlyDotIo() bool {
@@ -361,11 +358,7 @@ func inKubernetes() bool {
 }
 
 func inDockerDesktop() bool {
-	return os.Getenv("TS_HOST_ENV") == "dde"
-}
-
-func inHomeAssistantAddOn() bool {
-	if os.Getenv("SUPERVISOR_TOKEN") != "" || os.Getenv("HASSIO_TOKEN") != "" {
+	if os.Getenv("TS_HOST_ENV") == "dde" {
 		return true
 	}
 	return false

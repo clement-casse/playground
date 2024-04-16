@@ -40,12 +40,26 @@ func OS() string {
 	return runtime.GOOS
 }
 
+var isSandboxedMacOS lazy.SyncValue[bool]
+
 // IsSandboxedMacOS reports whether this process is a sandboxed macOS
 // process (either the app or the extension). It is true for the Mac App Store
 // and macsys (System Extension) version on macOS, and false for
 // tailscaled-on-macOS.
 func IsSandboxedMacOS() bool {
-	return IsMacAppStore() || IsMacSysExt()
+	if runtime.GOOS != "darwin" {
+		return false
+	}
+	return isSandboxedMacOS.Get(func() bool {
+		if IsMacSysExt() {
+			return true
+		}
+		exe, err := os.Executable()
+		if err != nil {
+			return false
+		}
+		return filepath.Base(exe) == "io.tailscale.ipn.macsys.network-extension" || strings.HasSuffix(exe, "/Contents/MacOS/Tailscale") || strings.HasSuffix(exe, "/Contents/MacOS/IPNExtension")
+	})
 }
 
 var isMacSysExt lazy.SyncValue[bool]
@@ -57,37 +71,11 @@ func IsMacSysExt() bool {
 		return false
 	}
 	return isMacSysExt.Get(func() bool {
-		if strings.Contains(os.Getenv("HOME"), "/Containers/io.tailscale.ipn.macsys/") {
-			return true
-		}
 		exe, err := os.Executable()
 		if err != nil {
 			return false
 		}
 		return filepath.Base(exe) == "io.tailscale.ipn.macsys.network-extension"
-	})
-}
-
-var isMacAppStore lazy.SyncValue[bool]
-
-// IsMacAppStore whether this binary is from the App Store version of Tailscale
-// for macOS.
-func IsMacAppStore() bool {
-	if runtime.GOOS != "darwin" {
-		return false
-	}
-	return isMacAppStore.Get(func() bool {
-		// Both macsys and app store versions can run CLI executable with
-		// suffix /Contents/MacOS/Tailscale. Check $HOME to filter out running
-		// as macsys.
-		if strings.Contains(os.Getenv("HOME"), "/Containers/io.tailscale.ipn.macsys/") {
-			return false
-		}
-		exe, err := os.Executable()
-		if err != nil {
-			return false
-		}
-		return strings.HasSuffix(exe, "/Contents/MacOS/Tailscale") || strings.HasSuffix(exe, "/Contents/MacOS/IPNExtension")
 	})
 }
 
@@ -100,7 +88,7 @@ func IsAppleTV() bool {
 		return false
 	}
 	return isAppleTV.Get(func() bool {
-		return strings.EqualFold(os.Getenv("XPC_SERVICE_NAME"), "io.tailscale.ipn.ios.network-extension-tvos")
+		return strings.EqualFold(os.Getenv("XPC_SERVICE_NAME"), "io.tailscale.ipn.tvos.network-extension")
 	})
 }
 
@@ -208,17 +196,15 @@ var getMeta lazy.SyncValue[Meta]
 
 // GetMeta returns version metadata about the current build.
 func GetMeta() Meta {
-	return getMeta.Get(func() Meta {
-		return Meta{
-			MajorMinorPatch: majorMinorPatch(),
-			Short:           Short(),
-			Long:            Long(),
-			GitCommit:       gitCommit(),
-			GitDirty:        gitDirty(),
-			ExtraGitCommit:  extraGitCommitStamp,
-			IsDev:           isDev(),
-			UnstableBranch:  IsUnstableBuild(),
-			Cap:             int(tailcfg.CurrentCapabilityVersion),
-		}
-	})
+	return Meta{
+		MajorMinorPatch: majorMinorPatch(),
+		Short:           Short(),
+		Long:            Long(),
+		GitCommit:       gitCommit(),
+		GitDirty:        gitDirty(),
+		ExtraGitCommit:  extraGitCommitStamp,
+		IsDev:           isDev(),
+		UnstableBranch:  IsUnstableBuild(),
+		Cap:             int(tailcfg.CurrentCapabilityVersion),
+	}
 }

@@ -35,6 +35,7 @@ type Persist struct {
 	PrivateNodeKey    key.NodePrivate
 	OldPrivateNodeKey key.NodePrivate // needed to request key rotation
 	Provider          string
+	LoginName         string
 	UserProfile       tailcfg.UserProfile
 	NetworkLockKey    key.NLPrivate
 	NodeID            tailcfg.StableNodeID
@@ -79,7 +80,8 @@ func (p *Persist) Equals(p2 *Persist) bool {
 		p.PrivateNodeKey.Equal(p2.PrivateNodeKey) &&
 		p.OldPrivateNodeKey.Equal(p2.OldPrivateNodeKey) &&
 		p.Provider == p2.Provider &&
-		p.UserProfile.Equal(&p2.UserProfile) &&
+		p.LoginName == p2.LoginName &&
+		p.UserProfile == p2.UserProfile &&
 		p.NetworkLockKey.Equal(p2.NetworkLockKey) &&
 		p.NodeID == p2.NodeID &&
 		reflect.DeepEqual(nilIfEmpty(p.DisallowedTKAStateIDs), nilIfEmpty(p2.DisallowedTKAStateIDs))
@@ -100,5 +102,5 @@ func (p *Persist) Pretty() string {
 		nk = p.PublicNodeKey()
 	}
 	return fmt.Sprintf("Persist{lm=%v, o=%v, n=%v u=%#v}",
-		mk.ShortString(), ok.ShortString(), nk.ShortString(), p.UserProfile.LoginName)
+		mk.ShortString(), ok.ShortString(), nk.ShortString(), p.LoginName)
 }
