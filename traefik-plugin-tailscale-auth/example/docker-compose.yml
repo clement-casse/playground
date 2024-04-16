@@ -1,0 +1,90 @@
+version: "3.9"
+
+volumes:
+  # ts_state volume is used to preserve the state of the tailscaled process so that the container
+  # keeps the same IP in the tailnet (100.x.y.z) across reboots.
+  ts_state:
+
+  # ts_socket volume is to share the tailscaled socket that traefik uses to get the certificate from
+  # the tailscale deamon. The volume is a tmpfs for sharing the /var/run/tailscale/tailscaled.sock
+  # between the tailscale container and the traefik one.
+  ts_socket:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+
+services:
+  # Spawning the tailscale container following the method presented in Tailscale Documentation
+  # https://tailscale.com/kb/1282/docker. This container will be used as network 'base' for the
+  # traefik container.
+  tailscale-traefik:
+    image: tailscale/tailscale:latest
+    hostname: traefik-plugin-test # This name will appear the tailscale admin console.
+    cap_add: [ net_admin, sys_module ]
+    environment:
+      TS_STATE_DIR: /var/lib/tailscale # Directory to map in a volume to preserve configuration over container reboots
+      TS_AUTHKEY: "${TAILSCALE_AUTHKEY?err}?ephemeral=true" # the environment variable TAILSCALE_AUTHKEY must be set in the shell lauching docker compose up
+      TS_SOCKET: "/var/run/tailscale/tailscaled.sock" # Making an explicit reference to Tailscale socket path to ensure that it uses the ts_socket volume
+      TS_EXTRA_ARGS: "--advertise-tags=tag:server"
+    volumes:
+      - type: bind
+        source: /dev/net/tun
+        target: /dev/net/tun
+      - type: volume
+        source: ts_state
+        target: /var/lib/tailscale/
+      - type: volume
+        source: ts_socket
+        target: /var/run/tailscale/
+    # Adding an Healthcheck to ensure that traefik will wait for this container to be properly started 
+    # before attempting to query tailscaled socket.
+    healthcheck:
+      test: ["CMD-SHELL", "tailscale status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # traefik service creates a traefik container in the network namespace of the tailscale container to use its
+  # connection to the wireguard VPN.
+  traefik:
+    image: traefik:v3.0
+    restart: no
+    network_mode: service:tailscale-traefik
+    depends_on:
+      tailscale-traefik:
+        condition: service_healthy
+    volumes:
+      # Binding for docker.sock used when using [providers.docker] in Traefik static config, currently not used.
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      # Giving access to tailscaled socket (ensure Path is coherent with TS_SOCKET env var)
+      - type: volume
+        source: ts_socket
+        target: /var/run/tailscale/
+      # Binding the code of the plugin for a local plugin installation. Directory should be in 
+      # the GOPATH env variable to be properly interpreted
+      - type: bind
+        source: ..
+        target: /plugins-local/src/github.com/clement-casse/playground/traefik-plugin-tailscale-auth
+      # Adding both traefik static and dynamic config
+      - type: bind
+        source: ./traefik.toml
+        target: /etc/traefik/traefik.toml
+      - type: bind
+        source: ./dynamic-config.yml
+        target: /etc/traefik/dynamic-config.yml
+    environment:
+      GOPATH: /plugins-local # So that plugin in recognized
+      TS_SOCKET: "/var/run/tailscale/tailscaled.sock" # Env var used by tailscale/tscert lib to find tailscaled socket
+      TAILSCALE_TRAEFIK_HOST_FQDN: ${TAILSCALE_TRAEFIK_HOST_FQDN?err} # Env var injected to be used by dynamic config with go templates
+    command: [
+      --configfile=/etc/traefik/traefik.toml,
+    ]
+    healthcheck:
+      test: ["CMD-SHELL", "traefik healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+

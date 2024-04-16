@@ -1,0 +1,8 @@
+http:
+  routers:
+    dashboard:
+      rule: Host(`{{ env "TAILSCALE_TRAEFIK_HOST_FQDN" }}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      entryPoints: [web, websecure]
+      service: api@internal
+      tls:
+        certresolver: tscertresolver

@@ -1,0 +1,56 @@
+defaultEntryPoints = ["web", "websecure"]
+
+[log]
+level = "INFO"
+
+[accessLog]
+
+# Making traefik container support healthcheck with the default values.
+[ping]
+
+# Activating Traefik dashboard to lock it behind the custom authentication plugin.
+[api]
+dashboard = true
+
+[entryPoints]
+  # The very classic Traefik entrypoints configuration listening on port 80 and 443.
+  # Redirecting HTTP traffic to HTTPS.
+  [entryPoints.web]
+  address = ":80"
+    [entryPoints.web.http.redirections]
+      [entryPoints.web.http.redirections.entryPoint]
+      to = "websecure"
+      scheme = "https"
+
+  [entryPoints.websecure]
+  address = ":443"
+
+  # Making explicit the declaration of the `traefik` entrypoint used for container
+  # healthcheck command. The declaration is implicit with the [ping] section with the default values.
+  [entryPoints.traefik]
+  address = ":8080"
+
+# Use Tailscale Certificate resolver introduced in traefik v3 to test communication with
+# local tailscale client via socket (provided by environment variable TS_SOCKET).
+# This does not involve any custom code from this repository.
+[certificatesResolvers.tscertresolver.tailscale]
+
+# Loading custom plugin code from this repository.
+# enabled by the docker-compose.yaml directives in the traefik service:
+#   volumes:
+#     - type: bind
+#       source: ..
+#       target: /plugins-local/src/github.com/clement-casse/playground/traefik-plugin-tailscale-auth
+#   environment:
+#     GOPATH: /plugins-local
+[experimental]
+  [experimental.localPlugins.tailscaleauth]
+  moduleName = "github.com/clement-casse/playground/traefik-plugin-tailscale-auth"
+
+# Using a simple config from a `file` provider to route the HTTP traffic addressed to the Tailscale FQDN
+# with prefixes "/api/" and "/dashboard/" to the "api@internal" service (i.e. displaying traefik dashboard).
+# The file uses Go templating to load environment variables as mentioned in the
+# [traefik doc]https://doc.traefik.io/traefik/providers/file/#go-templating)
+[providers]
+  [providers.file]
+  filename = "/etc/traefik/dynamic-config.yml"
