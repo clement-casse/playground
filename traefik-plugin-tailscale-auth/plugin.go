@@ -60,7 +60,7 @@ func (ts *TailscaleAuth) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	h.Set("Tailscale-User", info.UserProfile.LoginName)
 	h.Set("Tailscale-Name", info.UserProfile.DisplayName)
 	h.Set("Tailscale-Profile-Picture", info.UserProfile.ProfilePicURL)
-	
+
 	// h.Set("Tailscale-Tailnet", tailnet)
 
 	ts.next.ServeHTTP(rw, req)
