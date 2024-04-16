@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
+	"os"
+	"strings"
 
 	"tailscale.com/client/tailscale"
 )
@@ -24,7 +26,7 @@ type TailscaleAuth struct {
 }
 
 // New creates the Traefik plugin.
-func New(_ context.Context, next http.Handler, config *Config, name string) (http.Handler, error) {
+func New(_ context.Context, next http.Handler, _ *Config, name string) (http.Handler, error) {
 	return &TailscaleAuth{
 		name: name,
 		next: next,
@@ -45,11 +47,21 @@ func (ts *TailscaleAuth) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := tailscale.WhoIs(req.Context(), remoteAddr.String())
+	localClient := &tailscale.LocalClient{UseSocketOnly: true}
+	info, err := localClient.WhoIs(req.Context(), remoteAddr.String())
 	if err != nil {
 		rw.WriteHeader(http.StatusUnauthorized)
+		os.Stderr.WriteString("can't look up " + remoteAddr.String() + " : " + err.Error())
 		return
 	}
+
+	h := rw.Header()
+	h.Set("Tailscale-Login", strings.Split(info.UserProfile.LoginName, "@")[0])
+	h.Set("Tailscale-User", info.UserProfile.LoginName)
+	h.Set("Tailscale-Name", info.UserProfile.DisplayName)
+	h.Set("Tailscale-Profile-Picture", info.UserProfile.ProfilePicURL)
+	
+	// h.Set("Tailscale-Tailnet", tailnet)
 
 	ts.next.ServeHTTP(rw, req)
 }

@@ -5,6 +5,19 @@ run:
     - vendor
 
 linters-settings:
+  depguard:
+    rules:
+      main:
+        files: [ $all, "!$test" ]
+        allow:
+          - $gostd
+          # Block warning import 'tailscale.com/client/tailscale' is not allowed from list 'Main' (depguard)
+          # because I do intentionnaly want to import this unstable library
+          - tailscale.com/client/tailscale
+  errcheck:
+    exclude-functions:
+      # os.Stdout.WriteString("...") and os.Stderr.WriteString("...") are used as logger for traefik plugin
+      - (*os.File).WriteString
   govet:
     enable-all: true
     disable:
@@ -30,6 +43,8 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    - varnamelen
+    - exhaustruct
     - dupl
     - testpackage
     - tparallel
@@ -51,6 +66,9 @@ issues:
   max-same-issues: 0
   exclude: []
   exclude-rules:
+    - text: "G104:" # Duplicated from errcheck checks
+      linters:
+        - gosec
     - path: (.+)_test.go
       linters:
         - goconst
