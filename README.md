@@ -16,9 +16,10 @@ In this git repository, each of the following directories correspond to one of t
 | Project      | Short Description           | Status |
 |--------------|-----------------------------|--------|
 | [`i-hate-latex`](./i-hate-latex/)   | Building a latex paper with Nix flakes, so that I can avoid installing MacTex on my machine. | Will probably not receive any update |
-| [`shuttle-rust`](./shuttle-rust/)   | A Rust workspace for testing [shuttle.rs](https://www.shuttle.rs/). | Will continue later |
 | [`kotlin-jetbrains-webapp`](./kotlin-jetbrains-webapp/) | Putting my hands into Kotlin, Ktor & Exposed for the first time. | Pondering if I should continue |
 | [`otelcol-custom`](./otelcol-custom/) | Creation of a custom OpenTelemetry Collector and creation of custom modules. | Active |
+| [`shuttle-rust`](./shuttle-rust/)   | A Rust workspace for testing [shuttle.rs](https://www.shuttle.rs/). | Will continue later |
+| [`traefik-plugin-tailscale-auth`](./traefik-plugin-tailscale-auth/) | Creation of a Traefik middleware plugin that support tailscale authentication | Active |
 | [`webservice-go`](./webservice-go/) | A very conventional Web server in Go with some reusable components, I think ... | Active |
 
 These projects come along with a `flake.nix` file that describes the development environment for this project.

@@ -10,7 +10,7 @@
     utils.lib.eachDefaultSystem (system:
       let
         # Generate a user-friendly version number for this development environement.
-        version = builtins.substring 0 8 self.lastModifiedDate;
+        #version = builtins.substring 0 8 self.lastModifiedDate;
 
         # Specify the version of Go for all derivétion that will use go later on.
         overlays = [

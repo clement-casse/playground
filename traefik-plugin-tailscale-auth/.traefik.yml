@@ -1,0 +1,9 @@
+displayName: Tailscale Auth Plugin
+type: middleware
+
+import: github.com/clement-casse/playground/traefik-plugin-tailscale-auth
+
+summary: >-
+  A middleware plugin that authenticates the user through its Tailscale IP address using local Tailscale client.
+
+testData:
