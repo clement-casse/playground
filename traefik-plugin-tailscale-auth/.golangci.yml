@@ -1,15 +1,16 @@
 run:
   timeout: 3m
-  skip-files: []
-  skip-dirs: []
+  concurrency: 4
+  skip-dirs:
+    - vendor
 
 linters-settings:
   govet:
     enable-all: true
     disable:
       - fieldalignment
-  golint:
-    min-confidence: 0
+  goimports:
+    local-prefixes: github.com/clement-casse/playground/traefik-plugin-tailscale-auth
   gocyclo:
     min-complexity: 12
   goconst:
@@ -29,12 +30,6 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - interfacer # deprecated
-    - maligned # deprecated
-    - scopelint # deprecated
-    - golint # deprecated
-    - cyclop # duplicate of gocyclo
-    - bodyclose # Too many false positives: https://github.com/timakin/bodyclose/issues/30
     - dupl
     - testpackage
     - tparallel
@@ -53,7 +48,6 @@ linters:
 
 issues:
   exclude-use-default: false
-  max-per-linter: 0
   max-same-issues: 0
   exclude: []
   exclude-rules:

@@ -45,7 +45,11 @@ func (ts *TailscaleAuth) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	tailscale.WhoIs(req.Context(), remoteAddr.String())
+	err := tailscale.WhoIs(req.Context(), remoteAddr.String())
+	if err != nil {
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	ts.next.ServeHTTP(rw, req)
 }
