@@ -79,7 +79,7 @@ services:
       GOPATH: /plugins-local # So that plugin in recognized
       TS_SOCKET: "/var/run/tailscale/tailscaled.sock" # Env var used by tailscale/tscert lib to find tailscaled socket
       TAILSCALE_TRAEFIK_HOST_FQDN: ${TAILSCALE_TRAEFIK_HOST_FQDN?err} # Env var injected to be used by dynamic config with go templates
-      YAEGI_UNSAFE: "1"
+      YAEGI_UNSAFE: "1" # Does not work unfortunatly
     command: [
       --configfile=/etc/traefik/traefik.toml,
     ]
