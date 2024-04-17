@@ -18,7 +18,7 @@ services:
   # https://tailscale.com/kb/1282/docker. This container will be used as network 'base' for the
   # traefik container.
   tailscale-traefik:
-    image: tailscale/tailscale:v1.44
+    image: tailscale/tailscale:v1.64
     hostname: traefik-plugin-test # This name will appear the tailscale admin console.
     cap_add: [ net_admin, sys_module ]
     environment:

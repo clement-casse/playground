@@ -2,7 +2,7 @@
   description = "Nix flake for creating a custom Traefik Plugin";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
   };
 
@@ -15,7 +15,7 @@
         # Specify the version of Go for all derivétion that will use go later on.
         overlays = [
           (final: prev: {
-            go = prev.go_1_20;
+            go = prev.go_1_22;
           })
         ];
 
