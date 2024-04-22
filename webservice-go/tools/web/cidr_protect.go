@@ -10,6 +10,9 @@ type cidrProtectMiddleware struct {
 	allowedNetworks []*net.IPNet
 }
 
+// verify http.Handler interface compliance
+var _ http.Handler = (*cidrProtectMiddleware)(nil)
+
 // NewCIDRProtectMiddleware creates a new middleware that only will allow access the provided CIDR ranges
 // otherwise it will return 401 Unauthorized status.
 // The source IP address is extracted from the requests headers or, if not found from the request itself.

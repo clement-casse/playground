@@ -10,6 +10,9 @@ type accessLoggingMiddleware struct {
 	logger *slog.Logger
 }
 
+// verify http.Handler interface compliance
+var _ http.Handler = (*accessLoggingMiddleware)(nil)
+
 // NewAccessLoggingMiddleware creates a middleware that logs requests that pass through it.
 func NewAccessLoggingMiddleware(logger *slog.Logger) Middleware {
 	return &accessLoggingMiddleware{logger}

@@ -16,6 +16,9 @@ type jwtAuthMiddleware struct {
 	secretKey []byte
 }
 
+// verify http.Handler interface compliance
+var _ http.Handler = (*jwtAuthMiddleware)(nil)
+
 // NewJWTAuthMiddleware creates a JWTAuthMiddleware with the given secret key used to check
 // requests signature. The middleware verifies that the requests addressed to the inner handler
 // are signed with JWT without checking users.
