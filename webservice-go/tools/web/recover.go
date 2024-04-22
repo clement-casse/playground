@@ -16,8 +16,8 @@ type recoveryMiddleware struct {
 	errorCounter metricapi.Int64Counter
 }
 
-// verify http.Handler interface compliance
-var _ http.Handler = (*recoveryMiddleware)(nil)
+// verify Middleware interface compliance
+var _ Middleware = (*recoveryMiddleware)(nil)
 
 // NewRecoveryMiddleware creates a middleware that tries to recover from panics that
 // happen when they reach the it and returns a 500 instead
