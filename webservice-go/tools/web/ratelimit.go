@@ -31,8 +31,8 @@ type clientRateLimiterMiddleware struct {
 	limitHeader string
 }
 
-// verify http.Handler interface compliance
-var _ http.Handler = (*clientRateLimiterMiddleware)(nil)
+// verify Middleware interface compliance
+var _ Middleware = (*clientRateLimiterMiddleware)(nil)
 
 type clientLimiter struct {
 	rate.Limiter
