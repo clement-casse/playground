@@ -31,6 +31,9 @@ type clientRateLimiterMiddleware struct {
 	limitHeader string
 }
 
+// verify http.Handler interface compliance
+var _ http.Handler = (*clientRateLimiterMiddleware)(nil)
+
 type clientLimiter struct {
 	rate.Limiter
 	lastSeen time.Time
