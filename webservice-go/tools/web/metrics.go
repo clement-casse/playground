@@ -66,8 +66,6 @@ func (m *metricsMiddleware) Handle(next http.Handler) http.Handler {
 			r.Body = &bw
 		}
 
-		fmt.Printf("%+v", r)
-
 		next.ServeHTTP(rww, r)
 
 		httpRouteKey := cmp.Or(m.pattern, r.URL.Path) // does a coalesce operation since go 1.22: i.e. if m.pattern == "" then r.URL.Path is used
