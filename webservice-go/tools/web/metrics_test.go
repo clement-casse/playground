@@ -28,10 +28,13 @@ func TestMetricsWithAttributes(t *testing.T) {
 	testServer := httptest.NewServer(mm.Handle(testingHandler))
 	defer testServer.Close()
 
-	_, err := http.Get(testServer.URL)
+	req, err := http.NewRequest("GET", testServer.URL, nil)
+	assert.NoError(t, err)
+	_, err = http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	testRequestTelemetryAttr := attribute.NewSet(
 		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.URLScheme(""), // httptest server does not seems to preserve scheme when serving requests
 		semconv.HTTPResponseStatusCode(http.StatusOK),
 		semconv.HTTPRouteKey.String("/"),
 	)
