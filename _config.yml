@@ -19,10 +19,10 @@ remote_theme: mmistakes/minimal-mistakes@4.25.0
 minimal_mistakes_skin: dirt
 breadcrumbs: true
 
-search: true
-search_provider: lunr
-lunr:
-  search_within_pages: true
+search: false
+# search_provider: lunr
+# lunr:
+#   search_within_pages: true
 
 plugins:
   - jekyll-paginate

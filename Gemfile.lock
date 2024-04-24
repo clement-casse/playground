@@ -265,7 +265,8 @@ PLATFORMS
   arm64-darwin-23
 
 DEPENDENCIES
-  github-pages (~> 231)
+  github-pages
+  jekyll-include-cache
   webrick (~> 1.8)
 
 BUNDLED WITH
