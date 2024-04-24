@@ -15,7 +15,7 @@ email: clement.casse@outlook.com
 repository: clement-casse/playground
 timezone: Europe/Paris
 
-remote_theme: mmistakes/minimal-mistakes@4.24.0
+remote_theme: mmistakes/minimal-mistakes@4.25.0
 minimal_mistakes_skin: dirt
 breadcrumbs: true
 
