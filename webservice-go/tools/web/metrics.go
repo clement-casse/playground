@@ -1,9 +1,9 @@
 package web
 
 import (
+	"cmp"
 	"net/http"
 	"time"
-	"cmp"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
