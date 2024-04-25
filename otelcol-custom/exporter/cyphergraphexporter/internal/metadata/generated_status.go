@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	Type      = component.MustNewType("cyphergraph")
-	scopeName = "go.opentelemetry.io/collector/exporter/cyphergraphexporter"
+	Type = component.MustNewType("cyphergraph")
 )
 
 const (
@@ -18,9 +17,9 @@ const (
 )
 
 func Meter(settings component.TelemetrySettings) metric.Meter {
-	return settings.MeterProvider.Meter(scopeName)
+	return settings.MeterProvider.Meter("github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter")
 }
 
 func Tracer(settings component.TelemetrySettings) trace.Tracer {
-	return settings.TracerProvider.Tracer(scopeName)
+	return settings.TracerProvider.Tracer("github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter")
 }

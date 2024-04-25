@@ -6,7 +6,6 @@ require (
 	github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter v0.0.0
 	github.com/mikefarah/yq/v4 v4.43.1
 	go.opentelemetry.io/collector/cmd/builder v0.99.0
-	go.opentelemetry.io/collector/cmd/mdatagen v0.99.0
 )
 
 require (
@@ -17,13 +16,10 @@ require (
 	github.com/elliotchance/orderedmap v1.5.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/go-logr/logr v1.4.1 // indirect
-	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-yaml v1.11.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
@@ -48,6 +44,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.opentelemetry.io/collector v0.99.0 // indirect
+	go.opentelemetry.io/collector/cmd/mdatagen v0.99.0 // indirect
 	go.opentelemetry.io/collector/component v0.99.0 // indirect
 	go.opentelemetry.io/collector/config/configopaque v1.6.0 // indirect
 	go.opentelemetry.io/collector/config/configretry v0.99.0 // indirect

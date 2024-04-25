@@ -5,11 +5,8 @@
 // this allows to run ocb and mdatagen without having them installed via //go:generate comments.
 // see https://www.jvt.me/posts/2022/06/15/go-tools-dependency-management/ for more explainations.
 
-package otelcolcustom
+package cyphergraphexporter
 
 import (
-	_ "github.com/mikefarah/yq/v4"
-	_ "go.opentelemetry.io/collector/cmd/builder"
-
-	_ "github.com/clement-casse/playground/otelcol-custom/exporter/cyphergraphexporter"
+	_ "go.opentelemetry.io/collector/cmd/mdatagen"
 )
