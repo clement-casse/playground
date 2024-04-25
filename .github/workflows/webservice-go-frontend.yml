@@ -58,5 +58,5 @@ jobs:
         uses: codecov/codecov-action@v4.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          codecov_yml_path: webservice-go/codecov.yaml
+          codecov_yml_path: ./codecov.yaml
           flags: webservice-front
