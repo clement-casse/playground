@@ -55,6 +55,7 @@ jobs:
     strategy:
       matrix:
         module:
+          # - . # There are no test to run in otelcolcustom directory
           - exporter/cyphergraphexporter
     steps:
       - name: Checkout Repo
@@ -74,5 +75,5 @@ jobs:
         uses: codecov/codecov-action@v4.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: otelcol-custom/${{ matrix.module }}/coverage.out
+          codecov_yml_path: ./codecov.yaml
           flags: otelcol-custom,${{ matrix.module }}

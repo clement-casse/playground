@@ -6,6 +6,7 @@ require (
 	github.com/neo4j/neo4j-go-driver/v5 v5.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.30.0
+	go.opentelemetry.io/collector/cmd/mdatagen v0.99.0
 	go.opentelemetry.io/collector/component v0.99.0
 	go.opentelemetry.io/collector/config/configopaque v1.6.0
 	go.opentelemetry.io/collector/config/configretry v0.99.0
@@ -16,6 +17,11 @@ require (
 	go.opentelemetry.io/otel v1.25.0
 	go.uber.org/goleak v1.3.0
 	go.uber.org/zap v1.27.0
+)
+
+require (
+	go.opentelemetry.io/collector/confmap/provider/fileprovider v0.99.0 // indirect
+	go.opentelemetry.io/collector/filter v0.99.0 // indirect
 )
 
 require (

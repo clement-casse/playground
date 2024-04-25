@@ -1,6 +1,7 @@
 package web
 
 import (
+	"cmp"
 	"net/http"
 	"time"
 
@@ -67,12 +68,7 @@ func (m *metricsMiddleware) Handle(next http.Handler) http.Handler {
 
 		next.ServeHTTP(rww, r)
 
-		var httpRouteKey string
-		if m.pattern == "" {
-			httpRouteKey = r.URL.Path
-		} else {
-			httpRouteKey = m.pattern
-		}
+		httpRouteKey := cmp.Or(m.pattern, r.URL.Path) // does a coalesce operation since go 1.22: i.e. if m.pattern == "" then r.URL.Path is used
 		o := metric.WithAttributes(
 			semconv.HTTPRequestMethodKey.String(r.Method),
 			semconv.HTTPResponseStatusCode(rww.status),
