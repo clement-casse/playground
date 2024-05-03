@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	tc "github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -16,11 +16,11 @@ var postgresContainerImg = "postgres:16"
 func InitPostgresTestContainer() (string, func() error, error) {
 	ctx := context.Background()
 	pgContainer, err := postgres.RunContainer(ctx,
-		tc.WithImage(postgresContainerImg),
+		testcontainers.WithImage(postgresContainerImg),
 		postgres.WithUsername("testcontainer_user"),
 		postgres.WithPassword("testcontainer_p@ssw0rd"),
 		postgres.WithDatabase("myservice_users"),
-		tc.WithWaitStrategy(wait.ForLog("database system is ready to accept connections").
+		testcontainers.WithWaitStrategy(wait.ForLog("database system is ready to accept connections").
 			WithOccurrence(2).
 			WithStartupTimeout(5*time.Second)),
 	)
