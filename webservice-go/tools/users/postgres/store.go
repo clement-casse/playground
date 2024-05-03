@@ -10,14 +10,18 @@ import (
 	pgmigrate "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file" // loading file driver for migrations
 	_ "github.com/lib/pq"                                // postgres driver for database/sql
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/clement-casse/playground/webservice-go/tools/users"
 )
 
 var (
-	addUserStmt  = `INSERT INTO "users" (email, username) VALUES ($1, $2)`
+	bcryptPasswordCost = 8
+
+	addUserStmt  = `INSERT INTO "users" (email, username, password) VALUES ($1, $2, $3)`
+	getUserStmt  = `SELECT email, username FROM "users" WHERE email=$1`
 	delUserStmt  = `DELETE FROM "users" ...`
-	authUserStmt = `SELECT * FROM "users" WHERE ...`
+	authUserStmt = `SELECT password FROM "users" WHERE email=$1`
 )
 
 type userStore struct {
@@ -25,7 +29,7 @@ type userStore struct {
 }
 
 // NewUserStore created a User Store with a Postgres Database backend.
-// migrations are run before returning.
+// All migrations are run by the store at creation time and are effective before returning.
 func NewUserStore(conStr string) (users.Store, error) {
 	var store = &userStore{}
 	var err error
@@ -44,8 +48,13 @@ func NewUserStore(conStr string) (users.Store, error) {
 	return store, m.Up()
 }
 
-func (s *userStore) CreateUser(ctx context.Context, name, email string) (*users.User, error) {
-	result, err := s.db.ExecContext(ctx, addUserStmt, name, email)
+func (s *userStore) CreateUser(ctx context.Context, name, email, password string) (*users.User, error) {
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(password), bcryptPasswordCost)
+	if err != nil {
+		return nil, fmt.Errorf("postgresUserStore/CreateUser: %w", err)
+	}
+
+	result, err := s.db.ExecContext(ctx, addUserStmt, email, name, string(hashedPwd))
 	if err != nil {
 		return nil, fmt.Errorf("postgresUserStore/CreateUser: %w", err)
 	}
@@ -71,12 +80,35 @@ func (s *userStore) DeleteUser(ctx context.Context, user *users.User) error {
 	return errors.New("not implemented")
 }
 
+// Authenticate performs a password authentication to the given user. Users are identified by their email.
+// It expect only one param being the password.
 func (s *userStore) Authenticate(ctx context.Context, userID string, params ...string) (*users.User, error) {
-	result, err := s.db.ExecContext(ctx, authUserStmt, userID)
-	if err != nil {
+	if len(params) != 1 {
+		return nil, errors.New("postgresUserStore/Authenticate: only expecting one param being the password")
+	}
+	credPassword := params[0]
+
+	var userHashedPassword string
+
+	if err := s.db.QueryRowContext(ctx, authUserStmt, userID).
+		Scan(&userHashedPassword); errors.Is(err, sql.ErrNoRows) {
+		return nil, users.ErrAuthenticationFailure // User simply does not exist
+	} else if err != nil {
+		return nil, fmt.Errorf("postgresUserStore/Authenticate: %w", err)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(userHashedPassword), []byte(credPassword)); err != nil {
+		return nil, users.ErrAuthenticationFailure // Password does not match
+	}
+
+	var username, email string
+	if err := s.db.QueryRowContext(ctx, getUserStmt, userID).
+		Scan(&email, &username); err != nil {
 		return nil, err
 	}
-	_ = result
-	_ = params
-	return nil, errors.New("not implemented")
+
+	return &users.User{
+		Name:  username,
+		Email: email,
+	}, nil
 }
