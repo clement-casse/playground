@@ -30,7 +30,7 @@ func TestCreateDefaultConfig(t *testing.T) {
 func TestFactory_CreateMetricsExporter_Fail(t *testing.T) {
 	factory := NewFactory()
 	cfg := factory.CreateDefaultConfig()
-	params := exportertest.NewNopCreateSettings()
+	params := exportertest.NewNopSettings()
 	_, err := factory.CreateMetricsExporter(context.Background(), params, cfg)
 	require.Error(t, err)
 }
@@ -38,7 +38,7 @@ func TestFactory_CreateMetricsExporter_Fail(t *testing.T) {
 func TestFactory_CreateLogsExporter_Fail(t *testing.T) {
 	factory := NewFactory()
 	cfg := factory.CreateDefaultConfig()
-	params := exportertest.NewNopCreateSettings()
+	params := exportertest.NewNopSettings()
 	_, err := factory.CreateLogsExporter(context.Background(), params, cfg)
 	require.Error(t, err)
 }
@@ -48,7 +48,7 @@ func TestFactory_CreateTraceExporter_Fail(t *testing.T) {
 	cfg := withDefaultConfig(func(c *Config) {
 		c.DatabaseURI = ""
 	})
-	params := exportertest.NewNopCreateSettings()
+	params := exportertest.NewNopSettings()
 	_, err := factory.CreateTracesExporter(context.Background(), params, cfg)
 	require.Error(t, err)
 }
@@ -56,7 +56,7 @@ func TestFactory_CreateTraceExporter_Fail(t *testing.T) {
 func TestFactory_CreateTraceExporter(t *testing.T) {
 	factory := NewFactory()
 	cfg := factory.CreateDefaultConfig()
-	params := exportertest.NewNopCreateSettings()
+	params := exportertest.NewNopSettings()
 	exporter, err := factory.CreateTracesExporter(context.Background(), params, cfg)
 	require.NoError(t, err)
 	require.NotNil(t, exporter)
