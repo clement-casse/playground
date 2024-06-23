@@ -27,7 +27,7 @@ func createDefaultConfig() component.Config {
 	}
 }
 
-func createTracesExporter(ctx context.Context, set exporter.CreateSettings, cCfg component.Config) (exporter.Traces, error) {
+func createTracesExporter(ctx context.Context, set exporter.Settings, cCfg component.Config) (exporter.Traces, error) {
 	cfg := cCfg.(*Config)
 	exp, err := newTracesExporter(cfg, set)
 	if err != nil {

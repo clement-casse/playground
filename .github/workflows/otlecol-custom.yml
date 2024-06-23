@@ -28,7 +28,6 @@ jobs:
     strategy:
       matrix:
         module:
-          - .
           - exporter/cyphergraphexporter
     steps:
       - name: Checkout Repo
@@ -41,21 +40,22 @@ jobs:
           cache-dependency-path: "otelcol-custom/${{ matrix.module }}/go.sum"
       - name: Go Vet
         run: go vet -json ./...
+        working-directory: "otelcol-custom/${{ matrix.module }}"
       - name: Go fmt
         run: test -z $(go fmt ./...)
+        working-directory: "otelcol-custom/${{ matrix.module }}"
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
           version: latest
           skip-pkg-cache: true
-          working-directory: otelcol-custom
+          working-directory: "otelcol-custom/${{ matrix.module }}"
 
   Test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         module:
-          # - . # There are no test to run in otelcolcustom directory
           - exporter/cyphergraphexporter
     steps:
       - name: Checkout Repo

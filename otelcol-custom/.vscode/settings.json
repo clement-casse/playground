@@ -1,6 +1,4 @@
 {
-    "nix.enableLanguageServer": true,
-    "nix.serverPath": "rnix-lsp",
     "go.lintTool": "golangci-lint",
     "go.formatTool": "gofmt",
 }

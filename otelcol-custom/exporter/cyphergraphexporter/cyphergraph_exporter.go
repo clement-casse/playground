@@ -22,7 +22,7 @@ type cyphergraphTraceExporter struct {
 	logger *zap.Logger
 }
 
-func newTracesExporter(cfg *Config, set exporter.CreateSettings) (cte *cyphergraphTraceExporter, err error) {
+func newTracesExporter(cfg *Config, set exporter.Settings) (cte *cyphergraphTraceExporter, err error) {
 	cte = &cyphergraphTraceExporter{logger: set.Logger}
 	if err = cfg.Validate(); err != nil {
 		return
