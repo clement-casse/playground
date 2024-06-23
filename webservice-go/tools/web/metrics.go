@@ -19,6 +19,9 @@ type metricsMiddleware struct {
 	responseBytesCounter api.Int64Counter
 }
 
+// verify Middleware interface compliance
+var _ Middleware = (*metricsMiddleware)(nil)
+
 // NewMetricsMiddleware creates a new metric monitoring middleware
 func NewMetricsMiddleware(otelMeter api.Meter, pattern string) Middleware {
 	m := &metricsMiddleware{pattern: pattern}
