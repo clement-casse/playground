@@ -22,11 +22,6 @@ require (
 )
 
 require (
-	github.com/hashicorp/go-version v1.7.0 // indirect
-	go.opentelemetry.io/collector/featuregate v1.10.0 // indirect
-)
-
-require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -49,6 +44,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
@@ -85,6 +81,7 @@ require (
 	go.opentelemetry.io/collector/config/configtelemetry v0.103.0 // indirect
 	go.opentelemetry.io/collector/confmap/provider/fileprovider v0.103.0 // indirect
 	go.opentelemetry.io/collector/extension v0.103.0 // indirect
+	go.opentelemetry.io/collector/featuregate v1.10.0 // indirect
 	go.opentelemetry.io/collector/filter v0.103.0 // indirect
 	go.opentelemetry.io/collector/receiver v0.103.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.52.0 // indirect
