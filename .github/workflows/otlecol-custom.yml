@@ -28,7 +28,6 @@ jobs:
     strategy:
       matrix:
         module:
-          - .
           - exporter/cyphergraphexporter
     steps:
       - name: Checkout Repo
