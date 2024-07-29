@@ -3,13 +3,6 @@ comment:
 
 component_management:
   individual_components:
-    # OpenTelemetry Collector Custom
-    - component_id: otelcol-custom-cyphergraph-exporter
-      name: opentelemetry-collector/cyphergraphexporter
-      paths: [ "otelcol-custom/exporter/cyphergraphexporter/coverage.out" ]
-      statuses:
-        - type: project
-          target: auto
     # Webservice-go projects
     - component_id: webservice-go-backend
       name: webservice-go/backend
