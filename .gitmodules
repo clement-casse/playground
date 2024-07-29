@@ -1,0 +1,4 @@
+[submodule "otelcol-custom"]
+	path = otelcol-custom
+	url = https://github.com/clement-casse/otelcol-custom.git
+    branch = main
