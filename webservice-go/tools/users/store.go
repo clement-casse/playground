@@ -2,7 +2,7 @@ package users
 
 import "context"
 
-//go:generate go run go.uber.org/mock/mockgen -destination=../../test/mocks/users/store_gen.go -package=users github.com/clement-casse/playground/webservice-go/tools/users Store
+//go:generate go run go.uber.org/mock/mockgen -destination=../../test/mocks/users/store_gen.go -package=users . Store
 
 type Store interface {
 	Authenticator
