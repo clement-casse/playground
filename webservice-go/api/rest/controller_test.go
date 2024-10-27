@@ -51,6 +51,12 @@ func TestWithAuthenticator(t *testing.T) {
 	assert.Same(t, mockAuthn, s.authn)
 }
 
+func TestWithSecret(t *testing.T) {
+	secret := []byte("forTestingPurpose!!")
+	c := NewAPIController(WithSecret(secret))
+	assert.Equal(t, secret, c.secret)
+}
+
 var (
 	errTesting     = fmt.Errorf("Testing Error with a private Text")
 	workingHandler = func(w http.ResponseWriter, _ *http.Request) error {

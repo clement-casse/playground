@@ -88,6 +88,14 @@ func WithAuthenticator(authn users.Authenticator) APIControllerOpt {
 	})
 }
 
+// WithSecret applies the given secret to the API Controller
+func WithSecret(s []byte) APIControllerOpt {
+	return apiControllerOptFunc(func(a *APIController) *APIController {
+		a.secret = s
+		return a
+	})
+}
+
 func setJSONHeader(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -113,8 +121,7 @@ func (c *APIController) registerRoute(pattern string, handlerFunc handlerFuncWit
 
 func (c *APIController) handleErrors(hwe handlerFuncWithError) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := hwe(w, r)
-		if err != nil {
+		if err := hwe(w, r); err != nil {
 			var apiErr apiError
 			if errors.As(err, &apiErr) {
 				c.logger.ErrorContext(r.Context(), apiErr.Error())
