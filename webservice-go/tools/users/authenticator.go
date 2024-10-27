@@ -5,6 +5,8 @@ import (
 	"errors"
 )
 
+//go:generate mockgen -destination=../../test/mocks/users/authenticator_gen.go -package=users github.com/clement-casse/playground/webservice-go/tools/users Authenticator
+
 // ErrAuthenticationFailure indicates that the user cannot be identified with the provided information.
 var ErrAuthenticationFailure = errors.New("authentication failure")
 

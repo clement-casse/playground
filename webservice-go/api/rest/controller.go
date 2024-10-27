@@ -10,12 +10,16 @@ import (
 	metricapi "go.opentelemetry.io/otel/metric"
 	traceapi "go.opentelemetry.io/otel/trace"
 
+	"github.com/clement-casse/playground/webservice-go/tools/users"
 	"github.com/clement-casse/playground/webservice-go/tools/web"
 )
 
 // APIController is a server that registers endpoints for a REST API
 type APIController struct {
 	mux *http.ServeMux
+
+	secret []byte
+	authn  users.Authenticator
 
 	otelMeter  metricapi.Meter
 	otelTracer traceapi.Tracer
@@ -33,10 +37,14 @@ func (fn apiControllerOptFunc) applyOpt(s *APIController) *APIController {
 	return fn(s)
 }
 
-// NewAPIController creates an API Handler for REST API
+// NewAPIController creates an API Controller for REST API
 func NewAPIController(opts ...APIControllerOpt) *APIController {
 	apiController := &APIController{
-		mux:        http.NewServeMux(),
+		mux: http.NewServeMux(),
+
+		secret: []byte("notAVerySecureSecret"),
+		authn:  nil,
+
 		otelMeter:  nil,
 		otelTracer: nil,
 		logger:     slog.Default(),
@@ -48,27 +56,35 @@ func NewAPIController(opts ...APIControllerOpt) *APIController {
 	return apiController
 }
 
-// WithLogger applies a custom logger for the APIHandler
+// WithLogger applies a custom logger for the APIController
 func WithLogger(l *slog.Logger) APIControllerOpt {
-	return apiControllerOptFunc(func(s *APIController) *APIController {
-		s.logger = l
-		return s
+	return apiControllerOptFunc(func(a *APIController) *APIController {
+		a.logger = l
+		return a
 	})
 }
 
-// WithMeter applies a custom OpenTelemetry Meter for the APIHandler (if not set no metrics are collected)
+// WithMeter applies a custom OpenTelemetry Meter for the APIController (if not set no metrics are collected)
 func WithMeter(m metricapi.Meter) APIControllerOpt {
-	return apiControllerOptFunc(func(s *APIController) *APIController {
-		s.otelMeter = m
-		return s
+	return apiControllerOptFunc(func(a *APIController) *APIController {
+		a.otelMeter = m
+		return a
 	})
 }
 
-// WithTracer applies a custom OpenTelemetry Tracer for the APIHandler (if not set no traces are collected)
+// WithTracer applies a custom OpenTelemetry Tracer for the APIController (if not set no traces are collected)
 func WithTracer(t traceapi.Tracer) APIControllerOpt {
-	return apiControllerOptFunc(func(s *APIController) *APIController {
-		s.otelTracer = t
-		return s
+	return apiControllerOptFunc(func(a *APIController) *APIController {
+		a.otelTracer = t
+		return a
+	})
+}
+
+// WithAuthenticator applies the given authenticator to the API Controller
+func WithAuthenticator(authn users.Authenticator) APIControllerOpt {
+	return apiControllerOptFunc(func(a *APIController) *APIController {
+		a.authn = authn
+		return a
 	})
 }
 

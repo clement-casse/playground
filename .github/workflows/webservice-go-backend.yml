@@ -53,6 +53,13 @@ jobs:
           path: webservice-go/web/app/dist/
           retention-days: 1
           if-no-files-found: error
+      - name: Upload mocks as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-mocks
+          path: webservice-go/test/mocks/
+          retention-days: 1
+          if-no-files-found: error
 
   Validate-Go:
     runs-on: ubuntu-latest
@@ -71,6 +78,11 @@ jobs:
         with:
           name: frontend-dist
           path: webservice-go/web/app/dist/
+      - name: Download generated mocks
+        uses: actions/download-artifact@v4
+        with:
+          name: test-mocks
+          path: webservice-go/test/mocks/
       - name: Go Vet
         run: go vet -json ./...
       - name: Go fmt
