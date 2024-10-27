@@ -111,6 +111,11 @@ jobs:
         with:
           name: frontend-dist
           path: webservice-go/web/app/dist/
+      - name: Download generated mocks
+        uses: actions/download-artifact@v4
+        with:
+          name: test-mocks
+          path: webservice-go/test/mocks/
       - name: Go Test Coverage
         run: |
           go test -failfast -race -covermode=atomic -coverprofile=coverage.out ./...
