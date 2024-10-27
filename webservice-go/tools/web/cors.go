@@ -10,6 +10,9 @@ type corsMiddleware struct {
 	*cors.Cors
 }
 
+// verify Middleware interface compliance
+var _ Middleware = (*corsMiddleware)(nil)
+
 // NewCORSMiddleware creates a CORS Middleware that returns Forbidden when the headers
 // do not match the same resource policy. It wraps github.com/rs/cors.
 func NewCORSMiddleware(allowsOrigins ...string) Middleware {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"runtime/debug"
@@ -12,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 
+	"github.com/clement-casse/playground/webservice-go/api/rest"
 	"github.com/clement-casse/playground/webservice-go/tools/web"
 )
 
@@ -106,7 +106,10 @@ func runMain(flags *flag.FlagSet) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	server := web.NewServer(listenAddr, http.DefaultServeMux,
+	apiCtrl := rest.NewAPIController(
+		rest.WithLogger(logger),
+	)
+	server := web.NewServer(listenAddr, apiCtrl.Router(),
 		web.WithLogger(logger),
 	)
 	srvErr := make(chan error, 1)

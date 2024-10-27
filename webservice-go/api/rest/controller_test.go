@@ -16,7 +16,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.uber.org/mock/gomock"
 
+	"github.com/clement-casse/playground/webservice-go/test/mocks/users"
 	"github.com/clement-casse/playground/webservice-go/tools/web"
 )
 
@@ -38,6 +40,21 @@ func TestWithTracer(t *testing.T) {
 	tracer := tp.Tracer("some tracer")
 	s := NewAPIController(WithTracer(tracer))
 	assert.Same(t, tracer, s.otelTracer)
+}
+
+func TestWithAuthenticator(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockAuthn := users.NewMockAuthenticator(mockCtrl)
+
+	s := NewAPIController(WithAuthenticator(mockAuthn))
+	assert.Same(t, mockAuthn, s.authn)
+}
+
+func TestWithSecret(t *testing.T) {
+	secret := []byte("forTestingPurpose!!")
+	c := NewAPIController(WithSecret(secret))
+	assert.Equal(t, secret, c.secret)
 }
 
 var (
