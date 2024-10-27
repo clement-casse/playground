@@ -20,7 +20,6 @@
         gotools
         go-tools
         delve
-        mockgen
 
         # Node & Tools
         nodejs_20
