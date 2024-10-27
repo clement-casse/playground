@@ -39,4 +39,10 @@ func TestUserStore(t *testing.T) {
 	anotherUser1, err := userStore.Authenticate(ctx, user1.Email, "user1Password")
 	assert.NoError(t, err)
 	assert.Equal(t, &users.User{Email: "user1@domain.example", Name: "user1"}, anotherUser1)
+
+	err = userStore.DeleteUser(ctx, anotherUser1)
+	assert.NoError(t, err)
+	notUser1, err := userStore.Authenticate(ctx, user1.Email, "user1Password")
+	assert.ErrorIs(t, err, users.ErrAuthenticationFailure)
+	assert.Nil(t, notUser1)
 }

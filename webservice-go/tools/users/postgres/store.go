@@ -20,7 +20,7 @@ var (
 
 	addUserStmt  = `INSERT INTO "users" (email, username, password) VALUES ($1, $2, $3)`
 	getUserStmt  = `SELECT email, username FROM "users" WHERE email=$1`
-	delUserStmt  = `DELETE FROM "users" ...`
+	delUserStmt  = `DELETE FROM "users" WHERE email=$1`
 	authUserStmt = `SELECT password FROM "users" WHERE email=$1`
 )
 
@@ -76,8 +76,12 @@ func (s *userStore) DeleteUser(ctx context.Context, user *users.User) error {
 	if err != nil {
 		return err
 	}
-	_ = result
-	return errors.New("not implemented")
+	if n, err := result.RowsAffected(); err != nil {
+		return fmt.Errorf("postgresUserStore/DeleteUser: %w", err)
+	} else if n != 1 {
+		return fmt.Errorf("postgresUserStore/DeleteUser: incorrect number of rows modified, expected 1, got %d", n)
+	}
+	return nil
 }
 
 // Authenticate performs a password authentication to the given user. Users are identified by their email.
