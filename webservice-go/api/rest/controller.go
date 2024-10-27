@@ -89,8 +89,8 @@ func (c *APIController) registerRoute(pattern string, handlerFunc handlerFuncWit
 	if c.otelTracer != nil {
 		handler = otelhttp.NewHandler(handler, pattern)
 	}
-	for _, mw := range middlewares {
-		handler = mw.Handle(handler)
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		handler = middlewares[i].Handle(handler)
 	}
 	c.mux.Handle(pattern, handler)
 }
